@@ -1,10 +1,15 @@
 <script lang="ts">
 	import BoardColumn from '$lib/components/board/BoardColumn.svelte';
-	import { goto } from '$app/navigation';
+	import IssueSheet from '$lib/components/issues/IssueSheet.svelte';
+	import { invalidate } from '$app/navigation';
 	import type { PageData } from './$types';
 	import type { Issue } from '$lib/types/beads';
 
 	let { data }: { data: PageData } = $props();
+
+	// Sheet state
+	let selectedIssue = $state<Issue | null>(null);
+	let sheetOpen = $state(false);
 
 	// Categorize issues into columns
 	const blockedIssues = $derived(
@@ -32,7 +37,21 @@
 	);
 
 	function handleIssueClick(issue: Issue) {
-		goto(`/repos/${data.repoId}/issues/${issue.id}`);
+		selectedIssue = issue;
+		sheetOpen = true;
+	}
+
+	function handleSheetOpenChange(open: boolean) {
+		sheetOpen = open;
+		if (!open) {
+			selectedIssue = null;
+		}
+	}
+
+	function handleIssueUpdate(updatedIssue: Issue) {
+		selectedIssue = updatedIssue;
+		// Refresh the board data
+		invalidate('app:issues');
 	}
 </script>
 
@@ -84,3 +103,12 @@
 		/>
 	</div>
 </div>
+
+<!-- Issue Detail Sheet -->
+<IssueSheet
+	issue={selectedIssue}
+	bind:open={sheetOpen}
+	repoId={data.repoId}
+	onOpenChange={handleSheetOpenChange}
+	onIssueUpdate={handleIssueUpdate}
+/>
