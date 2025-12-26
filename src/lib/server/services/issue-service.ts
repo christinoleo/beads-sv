@@ -1,8 +1,98 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import type { Issue, IssueFilter, IssueSort, CreateIssueDto, UpdateIssueDto, PaginatedResponse } from '$lib/types/beads';
+import type { Issue, IssueType, IssueStatus, Priority, IssueFilter, IssueSort, CreateIssueDto, UpdateIssueDto, PaginatedResponse } from '$lib/types/beads';
 import { parseIssue, serializeIssue } from '$lib/server/parser/issue-parser';
 import { appConfig } from './app-config';
+
+// JSONL issue format from beads CLI
+interface JsonlIssue {
+	id: string;
+	title: string;
+	description?: string;
+	status: string;
+	priority: number;
+	issue_type: string;
+	created_at: string;
+	updated_at?: string;
+	closed_at?: string;
+	close_reason?: string;
+	labels?: string[];
+	dependencies?: Array<{
+		issue_id: string;
+		depends_on_id: string;
+		type: string;
+	}>;
+}
+
+function mapJsonlToIssue(jsonl: JsonlIssue, repoPath: string): Issue {
+	// Map status
+	let status: IssueStatus = 'open';
+	if (jsonl.status === 'closed') status = 'closed';
+	else if (jsonl.status === 'in_progress' || jsonl.status === 'in-progress') status = 'in_progress';
+
+	// Map type
+	const typeMap: Record<string, IssueType> = {
+		task: 'task', bug: 'bug', feature: 'feature', epic: 'epic', chore: 'chore'
+	};
+	const type = typeMap[jsonl.issue_type] || 'task';
+
+	// Map priority (ensure 0-4 range)
+	const priority = Math.max(0, Math.min(4, jsonl.priority)) as Priority;
+
+	// Extract blockedBy from dependencies
+	const blockedBy = (jsonl.dependencies || [])
+		.filter(d => d.issue_id === jsonl.id && d.type === 'blocks')
+		.map(d => d.depends_on_id);
+
+	// Extract blocks (where this issue blocks others)
+	const blocks = (jsonl.dependencies || [])
+		.filter(d => d.depends_on_id === jsonl.id && d.type === 'blocks')
+		.map(d => d.issue_id);
+
+	// Extract parent from parent-child dependency
+	const parentDep = (jsonl.dependencies || [])
+		.find(d => d.issue_id === jsonl.id && d.type === 'parent-child');
+
+	return {
+		id: jsonl.id,
+		title: jsonl.title,
+		type,
+		status,
+		priority,
+		created: jsonl.created_at.split('T')[0],
+		updated: jsonl.updated_at?.split('T')[0],
+		closed: jsonl.closed_at?.split('T')[0],
+		description: jsonl.description || '',
+		labels: jsonl.labels || [],
+		blockedBy,
+		blocks,
+		parentId: parentDep?.depends_on_id,
+		filePath: path.join(repoPath, '.beads', 'issues.jsonl')
+	};
+}
+
+async function loadIssuesFromJsonl(repoPath: string): Promise<Issue[]> {
+	const jsonlPath = path.join(repoPath, '.beads', 'issues.jsonl');
+	const issues: Issue[] = [];
+
+	try {
+		const content = await fs.readFile(jsonlPath, 'utf-8');
+		const lines = content.trim().split('\n').filter(Boolean);
+
+		for (const line of lines) {
+			try {
+				const jsonlIssue = JSON.parse(line) as JsonlIssue;
+				issues.push(mapJsonlToIssue(jsonlIssue, repoPath));
+			} catch {
+				// Skip unparseable lines
+			}
+		}
+	} catch {
+		// JSONL file doesn't exist
+	}
+
+	return issues;
+}
 
 export class IssueNotFoundError extends Error {
 	constructor(
@@ -23,26 +113,30 @@ export async function listIssues(
 	const repo = await appConfig.getRepo(repoId);
 	if (!repo) throw new Error('Repository not found');
 
-	const issuesDir = path.join(repo.path, '.beads', 'issues');
-	let issues: Issue[] = [];
+	// Load issues from JSONL (beads CLI format)
+	let issues = await loadIssuesFromJsonl(repo.path);
 
-	try {
-		const files = await fs.readdir(issuesDir);
+	// Fallback to markdown files if JSONL is empty
+	if (issues.length === 0) {
+		const issuesDir = path.join(repo.path, '.beads', 'issues');
+		try {
+			const files = await fs.readdir(issuesDir);
 
-		for (const file of files) {
-			if (!file.endsWith('.md')) continue;
+			for (const file of files) {
+				if (!file.endsWith('.md')) continue;
 
-			try {
-				const filePath = path.join(issuesDir, file);
-				const content = await fs.readFile(filePath, 'utf-8');
-				const issue = parseIssue(content, filePath);
-				issues.push(issue);
-			} catch {
-				// Skip unparseable files
+				try {
+					const filePath = path.join(issuesDir, file);
+					const content = await fs.readFile(filePath, 'utf-8');
+					const issue = parseIssue(content, filePath);
+					issues.push(issue);
+				} catch {
+					// Skip unparseable files
+				}
 			}
+		} catch (e) {
+			if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;
 		}
-	} catch (e) {
-		if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;
 	}
 
 	// Apply filters
@@ -108,6 +202,12 @@ export async function getIssue(repoId: string, issueId: string): Promise<Issue> 
 	const repo = await appConfig.getRepo(repoId);
 	if (!repo) throw new Error('Repository not found');
 
+	// Try JSONL first
+	const issues = await loadIssuesFromJsonl(repo.path);
+	const jsonlIssue = issues.find(i => i.id === issueId);
+	if (jsonlIssue) return jsonlIssue;
+
+	// Fallback to markdown file
 	const filePath = path.join(repo.path, '.beads', 'issues', `${issueId}.md`);
 
 	try {

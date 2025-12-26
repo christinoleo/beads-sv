@@ -43,10 +43,17 @@ export async function validateBeadsRepo(repoPath: string): Promise<ValidationRes
 		}
 	}
 
-	// Validate required fields
-	if (!config.prefix || typeof config.prefix !== 'string') {
-		return { isValid: false, error: 'Config missing or invalid "prefix" field' };
-	}
+	// Validate and normalize prefix field
+	// Beads uses 'issue-prefix' in YAML, but we normalize to 'prefix'
+	const rawConfig = config as Record<string, unknown>;
+	const prefix = rawConfig['issue-prefix'] || rawConfig.prefix || rawConfig.issuePrefix;
+
+	// If no prefix specified, derive from directory name
+	const normalizedPrefix = typeof prefix === 'string' && prefix.trim()
+		? prefix.trim()
+		: path.basename(repoPath);
+
+	config.prefix = normalizedPrefix;
 
 	if (!config.version) {
 		warnings.push('Config missing "version" field');
