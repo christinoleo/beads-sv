@@ -43,29 +43,26 @@
 	}
 </script>
 
-<Card.Root class="relative hover:shadow-md transition-shadow">
+<Card.Root class="relative transition-shadow hover:shadow-md">
 	<Card.Header class="pb-2">
 		<div class="flex items-start justify-between gap-2">
-			<div class="flex items-center gap-2 min-w-0">
+			<div class="flex min-w-0 items-center gap-2">
 				{#if repo.color}
-					<div
-						class="w-3 h-3 rounded-full shrink-0"
-						style="background-color: {repo.color}"
-					></div>
+					<div class="h-3 w-3 shrink-0 rounded-full" style="background-color: {repo.color}"></div>
 				{:else}
-					<Icon icon="mdi:git" class="w-5 h-5 text-muted-foreground shrink-0" />
+					<Icon icon="mdi:git" class="h-5 w-5 shrink-0 text-muted-foreground" />
 				{/if}
-				<Card.Title class="text-lg truncate">{repo.name}</Card.Title>
+				<Card.Title class="truncate text-lg">{repo.name}</Card.Title>
 			</div>
 			{#if !repo.isValid}
 				<Badge variant="destructive" class="shrink-0">
-					<Icon icon="mdi:alert" class="w-3 h-3 mr-1" />
+					<Icon icon="mdi:alert" class="mr-1 h-3 w-3" />
 					Invalid
 				</Badge>
 			{/if}
 		</div>
 		<Card.Description class="flex items-center gap-1 text-xs">
-			<Icon icon="mdi:folder-outline" class="w-4 h-4 shrink-0" />
+			<Icon icon="mdi:folder-outline" class="h-4 w-4 shrink-0" />
 			<span class="truncate" title={repo.path}>{truncatePath(repo.path)}</span>
 		</Card.Description>
 	</Card.Header>
@@ -73,35 +70,35 @@
 	<Card.Content class="pb-3">
 		<div class="flex flex-wrap gap-2">
 			<Badge variant="secondary" class="gap-1">
-				<Icon icon="mdi:file-document-outline" class="w-3 h-3" />
+				<Icon icon="mdi:file-document-outline" class="h-3 w-3" />
 				{repo.issueCount ?? 0} issues
 			</Badge>
 			<Badge variant="outline" class="gap-1">
-				<Icon icon="mdi:circle-outline" class="w-3 h-3" />
+				<Icon icon="mdi:circle-outline" class="h-3 w-3" />
 				{repo.openCount ?? 0} open
 			</Badge>
 			<Badge variant="outline" class="gap-1">
-				<Icon icon="mdi:tag-outline" class="w-3 h-3" />
+				<Icon icon="mdi:tag-outline" class="h-3 w-3" />
 				{repo.config.prefix}
 			</Badge>
 		</div>
 
 		{#if repo.errorMessage}
-			<p class="mt-2 text-xs text-destructive flex items-start gap-1">
-				<Icon icon="mdi:alert-circle" class="w-4 h-4 shrink-0 mt-0.5" />
+			<p class="mt-2 flex items-start gap-1 text-xs text-destructive">
+				<Icon icon="mdi:alert-circle" class="mt-0.5 h-4 w-4 shrink-0" />
 				<span>{repo.errorMessage}</span>
 			</p>
 		{/if}
 	</Card.Content>
 
-	<Card.Footer class="pt-0 flex items-center justify-between">
-		<span class="text-xs text-muted-foreground flex items-center gap-1">
-			<Icon icon="mdi:sync" class="w-3 h-3" />
+	<Card.Footer class="flex items-center justify-between pt-0">
+		<span class="flex items-center gap-1 text-xs text-muted-foreground">
+			<Icon icon="mdi:sync" class="h-3 w-3" />
 			{formatDate(repo.lastSyncedAt)}
 		</span>
 		<div class="flex gap-1">
 			<Button variant="ghost" size="icon-sm" onclick={() => onOpen?.(repo)} title="Open repository">
-				<Icon icon="mdi:open-in-new" class="w-4 h-4" />
+				<Icon icon="mdi:open-in-new" class="h-4 w-4" />
 			</Button>
 			<Button
 				variant="ghost"
@@ -110,7 +107,7 @@
 				title="Remove repository"
 				class="text-destructive hover:text-destructive"
 			>
-				<Icon icon="mdi:trash-can-outline" class="w-4 h-4" />
+				<Icon icon="mdi:trash-can-outline" class="h-4 w-4" />
 			</Button>
 		</div>
 	</Card.Footer>

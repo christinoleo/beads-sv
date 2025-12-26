@@ -125,7 +125,10 @@ class AppConfigService {
 
 	private generateRepoId(repoPath: string): string {
 		const hash = Buffer.from(repoPath).toString('base64url').slice(0, 8);
-		const name = path.basename(repoPath).toLowerCase().replace(/[^a-z0-9]/g, '-');
+		const name = path
+			.basename(repoPath)
+			.toLowerCase()
+			.replace(/[^a-z0-9]/g, '-');
 		return `${name}-${hash}`;
 	}
 }

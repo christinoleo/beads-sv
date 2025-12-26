@@ -44,10 +44,7 @@
 			onclick={() => appState.toggleSidebar()}
 			class={cn(appState.sidebarCollapsed && 'mx-auto')}
 		>
-			<Icon
-				icon={appState.sidebarCollapsed ? 'mdi:menu' : 'mdi:chevron-left'}
-				class="h-5 w-5"
-			/>
+			<Icon icon={appState.sidebarCollapsed ? 'mdi:menu' : 'mdi:chevron-left'} class="h-5 w-5" />
 			<span class="sr-only">Toggle sidebar</span>
 		</Button>
 	</div>
@@ -56,7 +53,7 @@
 	<div class="flex-1 overflow-y-auto py-2">
 		{#if !appState.sidebarCollapsed}
 			<div class="px-3 py-2">
-				<h2 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+				<h2 class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
 					Repositories
 				</h2>
 			</div>
@@ -92,10 +89,7 @@
 				{:else}
 					<Button
 						variant={isActive ? 'secondary' : 'ghost'}
-						class={cn(
-							'w-full justify-start gap-3',
-							!repo.isValid && 'opacity-60'
-						)}
+						class={cn('w-full justify-start gap-3', !repo.isValid && 'opacity-60')}
 						onclick={() => handleRepoClick(repo.id)}
 						disabled={!repo.isValid}
 					>
@@ -113,9 +107,7 @@
 				{/if}
 			{:else}
 				{#if !appState.sidebarCollapsed}
-					<div class="px-3 py-4 text-center text-sm text-muted-foreground">
-						No repositories yet
-					</div>
+					<div class="px-3 py-4 text-center text-sm text-muted-foreground">No repositories yet</div>
 				{/if}
 			{/each}
 		</nav>

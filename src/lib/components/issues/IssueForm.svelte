@@ -9,7 +9,14 @@
 	import StatusBadge from '$lib/components/shared/StatusBadge.svelte';
 	import PriorityBadge from '$lib/components/shared/PriorityBadge.svelte';
 	import TypeIcon from '$lib/components/shared/TypeIcon.svelte';
-	import type { Issue, IssueType, IssueStatus, Priority, CreateIssueDto, UpdateIssueDto } from '$lib/types/beads';
+	import type {
+		Issue,
+		IssueType,
+		IssueStatus,
+		Priority,
+		CreateIssueDto,
+		UpdateIssueDto
+	} from '$lib/types/beads';
 
 	interface Props {
 		issue?: Issue | null;
@@ -197,18 +204,26 @@
 </script>
 
 <Dialog.Root bind:open onOpenChange={handleOpenChange}>
-	<Dialog.Content class="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+	<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 		<Dialog.Header>
 			<Dialog.Title class="flex items-center gap-2">
 				<Icon icon={isEditing ? 'mdi:pencil' : 'mdi:plus-circle'} class="h-5 w-5" />
 				{isEditing ? 'Edit Issue' : 'New Issue'}
 			</Dialog.Title>
 			<Dialog.Description>
-				{isEditing ? 'Update the issue details below.' : 'Fill in the details to create a new issue.'}
+				{isEditing
+					? 'Update the issue details below.'
+					: 'Fill in the details to create a new issue.'}
 			</Dialog.Description>
 		</Dialog.Header>
 
-		<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-6 py-4">
+		<form
+			onsubmit={(e) => {
+				e.preventDefault();
+				handleSubmit();
+			}}
+			class="space-y-6 py-4"
+		>
 			<!-- Title -->
 			<div class="space-y-2">
 				<label for="issue-title" class="text-sm font-medium">
@@ -250,16 +265,13 @@
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content class="w-48">
 							{#each typeOptions as option (option.value)}
-								<DropdownMenu.Item
-									onclick={() => type = option.value}
-									class="cursor-pointer"
-								>
+								<DropdownMenu.Item onclick={() => (type = option.value)} class="cursor-pointer">
 									<span class="flex items-center gap-2">
 										<TypeIcon type={option.value} size={16} />
 										<span>{option.label}</span>
 									</span>
 									{#if type === option.value}
-										<Icon icon="mdi:check" class="h-4 w-4 ml-auto" />
+										<Icon icon="mdi:check" class="ml-auto h-4 w-4" />
 									{/if}
 								</DropdownMenu.Item>
 							{/each}
@@ -286,13 +298,10 @@
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content class="w-48">
 							{#each priorityOptions as option (option.value)}
-								<DropdownMenu.Item
-									onclick={() => priority = option.value}
-									class="cursor-pointer"
-								>
+								<DropdownMenu.Item onclick={() => (priority = option.value)} class="cursor-pointer">
 									<PriorityBadge priority={formatPriority(option.value)} />
 									{#if priority === option.value}
-										<Icon icon="mdi:check" class="h-4 w-4 ml-auto" />
+										<Icon icon="mdi:check" class="ml-auto h-4 w-4" />
 									{/if}
 								</DropdownMenu.Item>
 							{/each}
@@ -321,13 +330,10 @@
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content class="w-48">
 							{#each statusOptions as option (option.value)}
-								<DropdownMenu.Item
-									onclick={() => status = option.value}
-									class="cursor-pointer"
-								>
+								<DropdownMenu.Item onclick={() => (status = option.value)} class="cursor-pointer">
 									<StatusBadge status={option.value} />
 									{#if status === option.value}
-										<Icon icon="mdi:check" class="h-4 w-4 ml-auto" />
+										<Icon icon="mdi:check" class="ml-auto h-4 w-4" />
 									{/if}
 								</DropdownMenu.Item>
 							{/each}
@@ -347,7 +353,7 @@
 					placeholder="Describe the issue (supports Markdown)"
 					rows={4}
 					disabled={isSubmitting}
-					class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+					class="flex min-h-[80px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 				></textarea>
 				<p class="text-xs text-muted-foreground">Markdown formatting is supported</p>
 			</div>
@@ -382,7 +388,7 @@
 									type="button"
 									onclick={() => removeLabel(label)}
 									disabled={isSubmitting}
-									class="hover:text-destructive ml-1 rounded-full"
+									class="ml-1 rounded-full hover:text-destructive"
 								>
 									<Icon icon="mdi:close" class="h-3 w-3" />
 								</button>
@@ -394,7 +400,9 @@
 
 			<!-- Error -->
 			{#if submitError}
-				<div class="bg-destructive/10 text-destructive rounded-md border border-destructive/20 p-3 flex items-center gap-2">
+				<div
+					class="flex items-center gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-destructive"
+				>
 					<Icon icon="mdi:alert-circle" class="h-4 w-4 shrink-0" />
 					<p class="text-sm">{submitError}</p>
 				</div>
@@ -407,10 +415,10 @@
 			</Button>
 			<Button onclick={handleSubmit} disabled={isSubmitting}>
 				{#if isSubmitting}
-					<Icon icon="mdi:loading" class="h-4 w-4 animate-spin mr-2" />
+					<Icon icon="mdi:loading" class="mr-2 h-4 w-4 animate-spin" />
 					{isEditing ? 'Updating...' : 'Creating...'}
 				{:else}
-					<Icon icon={isEditing ? 'mdi:content-save' : 'mdi:plus'} class="h-4 w-4 mr-2" />
+					<Icon icon={isEditing ? 'mdi:content-save' : 'mdi:plus'} class="mr-2 h-4 w-4" />
 					{isEditing ? 'Save Changes' : 'Create Issue'}
 				{/if}
 			</Button>

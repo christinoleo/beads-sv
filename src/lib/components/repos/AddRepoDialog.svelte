@@ -113,7 +113,7 @@
 	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title class="flex items-center gap-2">
-				<Icon icon="mdi:folder-plus" class="w-5 h-5" />
+				<Icon icon="mdi:folder-plus" class="h-5 w-5" />
 				Add Repository
 			</Dialog.Title>
 			<Dialog.Description>
@@ -139,9 +139,9 @@
 						disabled={!path.trim() || isValidating || isAdding}
 					>
 						{#if isValidating}
-							<Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
+							<Icon icon="mdi:loading" class="h-4 w-4 animate-spin" />
 						{:else}
-							<Icon icon="mdi:check-circle-outline" class="w-4 h-4" />
+							<Icon icon="mdi:check-circle-outline" class="h-4 w-4" />
 						{/if}
 						Validate
 					</Button>
@@ -150,15 +150,15 @@
 
 			{#if validationResult}
 				<div
-					class="p-3 rounded-lg border {validationResult.isValid
-						? 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-900'
-						: 'bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-900'}"
+					class="rounded-lg border p-3 {validationResult.isValid
+						? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'
+						: 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950'}"
 				>
 					<div class="flex items-start gap-2">
 						{#if validationResult.isValid}
 							<Icon
 								icon="mdi:check-circle"
-								class="w-5 h-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5"
+								class="mt-0.5 h-5 w-5 shrink-0 text-green-600 dark:text-green-400"
 							/>
 							<div class="space-y-2">
 								<p class="text-sm font-medium text-green-800 dark:text-green-200">
@@ -179,8 +179,8 @@
 								{#if validationResult.warnings?.length}
 									<div class="mt-2 space-y-1">
 										{#each validationResult.warnings as warning, i (i)}
-											<p class="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-1">
-												<Icon icon="mdi:alert" class="w-3 h-3 shrink-0 mt-0.5" />
+											<p class="flex items-start gap-1 text-xs text-amber-600 dark:text-amber-400">
+												<Icon icon="mdi:alert" class="mt-0.5 h-3 w-3 shrink-0" />
 												{warning}
 											</p>
 										{/each}
@@ -190,7 +190,7 @@
 						{:else}
 							<Icon
 								icon="mdi:close-circle"
-								class="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5"
+								class="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400"
 							/>
 							<p class="text-sm text-red-800 dark:text-red-200">
 								{validationResult.error}
@@ -201,9 +201,11 @@
 			{/if}
 
 			{#if addError}
-				<div class="p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-950 dark:border-red-900">
-					<p class="text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
-						<Icon icon="mdi:alert-circle" class="w-4 h-4 shrink-0" />
+				<div
+					class="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950"
+				>
+					<p class="flex items-center gap-2 text-sm text-red-800 dark:text-red-200">
+						<Icon icon="mdi:alert-circle" class="h-4 w-4 shrink-0" />
 						{addError}
 					</p>
 				</div>
@@ -212,15 +214,12 @@
 
 		<Dialog.Footer>
 			<Button variant="outline" onclick={() => handleOpenChange(false)}>Cancel</Button>
-			<Button
-				onclick={addRepo}
-				disabled={!validationResult?.isValid || isAdding}
-			>
+			<Button onclick={addRepo} disabled={!validationResult?.isValid || isAdding}>
 				{#if isAdding}
-					<Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
+					<Icon icon="mdi:loading" class="h-4 w-4 animate-spin" />
 					Adding...
 				{:else}
-					<Icon icon="mdi:plus" class="w-4 h-4" />
+					<Icon icon="mdi:plus" class="h-4 w-4" />
 					Add Repository
 				{/if}
 			</Button>

@@ -1,7 +1,14 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { listIssues, createIssue } from '$lib/server/services/issue-service';
-import type { IssueFilter, IssueSort, IssueStatus, IssueType, Priority, CreateIssueDto } from '$lib/types/beads';
+import type {
+	IssueFilter,
+	IssueSort,
+	IssueStatus,
+	IssueType,
+	Priority,
+	CreateIssueDto
+} from '$lib/types/beads';
 
 // GET /api/repos/[repoId]/issues - List issues with filters
 export const GET: RequestHandler = async ({ params, url }) => {

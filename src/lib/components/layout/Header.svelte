@@ -101,10 +101,7 @@
 			{#if index === breadcrumbs.length - 1}
 				<span class="font-medium">{crumb.label}</span>
 			{:else}
-				<a
-					href={crumb.href}
-					class="text-muted-foreground transition-colors hover:text-foreground"
-				>
+				<a href={crumb.href} class="text-muted-foreground transition-colors hover:text-foreground">
 					{crumb.label}
 				</a>
 			{/if}
@@ -123,7 +120,7 @@
 		<span class="hidden lg:inline-flex">Search...</span>
 		<span class="inline-flex lg:hidden">Search...</span>
 		<kbd
-			class="pointer-events-none absolute right-1.5 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex"
+			class="pointer-events-none absolute top-1.5 right-1.5 hidden h-6 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex"
 		>
 			<span class="text-xs">Ctrl</span>K
 		</kbd>
@@ -141,14 +138,11 @@
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content align="end" class="w-36">
 			{#each themeOptions as option (option.value)}
-				<DropdownMenu.Item
-					onclick={() => appState.setTheme(option.value)}
-					class="cursor-pointer"
-				>
-					<Icon icon={option.icon} class="h-4 w-4 mr-2" />
+				<DropdownMenu.Item onclick={() => appState.setTheme(option.value)} class="cursor-pointer">
+					<Icon icon={option.icon} class="mr-2 h-4 w-4" />
 					<span>{option.label}</span>
 					{#if appState.theme === option.value}
-						<Icon icon="mdi:check" class="h-4 w-4 ml-auto" />
+						<Icon icon="mdi:check" class="ml-auto h-4 w-4" />
 					{/if}
 				</DropdownMenu.Item>
 			{/each}
@@ -163,10 +157,7 @@
 		<Command.Empty>No results found.</Command.Empty>
 		<Command.Group heading="Repositories">
 			{#each appState.repos as repo (repo.id)}
-				<Command.Item
-					value="repo:{repo.id}"
-					onSelect={() => handleSearchSelect(`repo:${repo.id}`)}
-				>
+				<Command.Item value="repo:{repo.id}" onSelect={() => handleSearchSelect(`repo:${repo.id}`)}>
 					<div
 						class="mr-2 h-3 w-3 rounded-full"
 						style="background-color: {repo.color ?? '#6366f1'}"
@@ -182,7 +173,13 @@
 		</Command.Group>
 		<Command.Separator />
 		<Command.Group heading="Actions">
-			<Command.Item value="add-repo" onSelect={() => { handleOpenChange(false); goto('/repos/add'); }}>
+			<Command.Item
+				value="add-repo"
+				onSelect={() => {
+					handleOpenChange(false);
+					goto('/repos/add');
+				}}
+			>
 				<Icon icon="mdi:plus" class="mr-2 h-4 w-4" />
 				<span>Add Repository</span>
 			</Command.Item>

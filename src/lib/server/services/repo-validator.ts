@@ -49,9 +49,8 @@ export async function validateBeadsRepo(repoPath: string): Promise<ValidationRes
 	const prefix = rawConfig['issue-prefix'] || rawConfig.prefix || rawConfig.issuePrefix;
 
 	// If no prefix specified, derive from directory name
-	const normalizedPrefix = typeof prefix === 'string' && prefix.trim()
-		? prefix.trim()
-		: path.basename(repoPath);
+	const normalizedPrefix =
+		typeof prefix === 'string' && prefix.trim() ? prefix.trim() : path.basename(repoPath);
 
 	config.prefix = normalizedPrefix;
 

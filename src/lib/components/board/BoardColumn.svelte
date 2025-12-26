@@ -31,10 +31,12 @@
 	};
 </script>
 
-<div class="bg-muted/30 flex h-full min-h-0 flex-col rounded-lg border">
+<div class="flex h-full min-h-0 flex-col rounded-lg border bg-muted/30">
 	<!-- Column Header -->
 	<div
-		class="sticky top-0 z-10 flex items-center justify-between border-b-2 p-3 {headerBorderColors[type]}"
+		class="sticky top-0 z-10 flex items-center justify-between border-b-2 p-3 {headerBorderColors[
+			type
+		]}"
 	>
 		<div class="flex items-center gap-2">
 			<h3 class="font-semibold">{title}</h3>
@@ -50,7 +52,7 @@
 			{#if emptySlot}
 				{@render emptySlot()}
 			{:else}
-				<div class="text-muted-foreground flex h-24 items-center justify-center text-sm">
+				<div class="flex h-24 items-center justify-center text-sm text-muted-foreground">
 					No issues
 				</div>
 			{/if}
@@ -62,10 +64,7 @@
 	</div>
 
 	<!-- Drop Zone Indicator (for future drag-and-drop) -->
-	<div
-		class="border-dashed border-transparent p-2 transition-colors"
-		data-drop-zone={type}
-	>
+	<div class="border-dashed border-transparent p-2 transition-colors" data-drop-zone={type}>
 		<!-- Visual indicator when dragging -->
 	</div>
 </div>

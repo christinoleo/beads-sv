@@ -94,7 +94,10 @@
 <div class="flex flex-wrap items-center gap-3">
 	<!-- Search Input -->
 	<div class="relative min-w-[200px] flex-1 md:max-w-xs">
-		<Icon icon="mdi:magnify" class="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+		<Icon
+			icon="mdi:magnify"
+			class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+		/>
 		<Input
 			type="search"
 			placeholder="Search issues..."
@@ -111,7 +114,7 @@
 				<Icon icon="mdi:circle-outline" class="h-4 w-4" />
 				Status
 				{#if statusFilter.length > 0}
-					<span class="bg-primary text-primary-foreground ml-1 rounded-full px-1.5 text-xs">
+					<span class="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
 						{statusFilter.length}
 					</span>
 				{/if}
@@ -137,7 +140,7 @@
 				<Icon icon="mdi:shape-outline" class="h-4 w-4" />
 				Type
 				{#if typeFilter.length > 0}
-					<span class="bg-primary text-primary-foreground ml-1 rounded-full px-1.5 text-xs">
+					<span class="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
 						{typeFilter.length}
 					</span>
 				{/if}
@@ -164,7 +167,7 @@
 				<Icon icon="mdi:flag-outline" class="h-4 w-4" />
 				Priority
 				{#if priorityFilter.length > 0}
-					<span class="bg-primary text-primary-foreground ml-1 rounded-full px-1.5 text-xs">
+					<span class="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
 						{priorityFilter.length}
 					</span>
 				{/if}

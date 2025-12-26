@@ -43,11 +43,7 @@ function createFileChangeEvent(
 /**
  * Handle file change with debouncing
  */
-function handleFileChange(
-	type: FileChangeEvent['type'],
-	repoId: string,
-	filePath: string
-): void {
+function handleFileChange(type: FileChangeEvent['type'], repoId: string, filePath: string): void {
 	const key = `${repoId}:${filePath}:${type}`;
 
 	// Clear existing timer for this file
@@ -159,7 +155,9 @@ export async function startFileWatcher(): Promise<void> {
 			}
 		}
 
-		console.log(`[FileWatcher] Started watching ${repos.filter(r => r.isValid).length} repositories`);
+		console.log(
+			`[FileWatcher] Started watching ${repos.filter((r) => r.isValid).length} repositories`
+		);
 	} catch (error) {
 		console.error('[FileWatcher] Failed to start file watchers:', error);
 	}
@@ -191,7 +189,7 @@ export async function stopAllWatchers(): Promise<void> {
 export async function refreshWatchers(): Promise<void> {
 	try {
 		const repos = await appConfig.getRepos();
-		const currentRepoIds = new Set(repos.filter(r => r.isValid).map(r => r.id));
+		const currentRepoIds = new Set(repos.filter((r) => r.isValid).map((r) => r.id));
 		const watchedRepoIds = new Set(watchers.keys());
 
 		// Stop watchers for removed repos

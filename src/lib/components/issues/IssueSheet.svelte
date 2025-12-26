@@ -192,17 +192,20 @@
 </script>
 
 <Sheet.Root bind:open onOpenChange={handleOpenChange}>
-	<Sheet.Content side="right" class="w-full sm:max-w-xl lg:max-w-2xl overflow-y-auto p-0 flex flex-col">
+	<Sheet.Content
+		side="right"
+		class="flex w-full flex-col overflow-y-auto p-0 sm:max-w-xl lg:max-w-2xl"
+	>
 		{#if displayIssue}
 			<!-- Header -->
-			<div class="border-b px-6 py-4 shrink-0">
+			<div class="shrink-0 border-b px-6 py-4">
 				<div class="flex items-start gap-3">
 					<!-- Type dropdown -->
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger>
 							{#snippet child({ props })}
 								<button
-									class="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+									class="rounded-lg bg-muted/50 p-2 transition-colors hover:bg-muted"
 									{...props}
 								>
 									<TypeIcon type={editType} size={24} />
@@ -218,19 +221,19 @@
 									<TypeIcon type={option.value} size={16} />
 									<span class="ml-2">{option.label}</span>
 									{#if editType === option.value}
-										<Icon icon="mdi:check" class="h-4 w-4 ml-auto" />
+										<Icon icon="mdi:check" class="ml-auto h-4 w-4" />
 									{/if}
 								</DropdownMenu.Item>
 							{/each}
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
 
-					<div class="flex-1 min-w-0 space-y-2">
+					<div class="min-w-0 flex-1 space-y-2">
 						<!-- Editable Title -->
 						<Input
 							bind:value={editTitle}
 							oninput={scheduleAutoSave}
-							class="text-lg font-semibold h-auto py-1.5 px-2 border-transparent hover:border-input focus:border-input bg-transparent"
+							class="h-auto border-transparent bg-transparent px-2 py-1.5 text-lg font-semibold hover:border-input focus:border-input"
 							placeholder="Issue title"
 						/>
 						<div class="flex items-center gap-2 px-2">
@@ -239,12 +242,12 @@
 							</Badge>
 							<!-- Save status indicator -->
 							{#if saveStatus === 'saving'}
-								<span class="text-xs text-muted-foreground flex items-center gap-1">
+								<span class="flex items-center gap-1 text-xs text-muted-foreground">
 									<Icon icon="mdi:loading" class="h-3 w-3 animate-spin" />
 									Saving...
 								</span>
 							{:else if saveStatus === 'saved'}
-								<span class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+								<span class="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
 									<Icon icon="mdi:check" class="h-3 w-3" />
 									Saved
 								</span>
@@ -255,13 +258,20 @@
 			</div>
 
 			<!-- Scrollable Content -->
-			<div class="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+			<div class="flex-1 space-y-5 overflow-y-auto px-6 py-4">
 				<!-- Error Banner -->
 				{#if updateError}
-					<div class="bg-destructive/10 text-destructive rounded-md border border-destructive/20 p-3 flex items-center gap-2">
+					<div
+						class="flex items-center gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-destructive"
+					>
 						<Icon icon="mdi:alert-circle" class="h-4 w-4 shrink-0" />
 						<p class="text-sm">{updateError}</p>
-						<Button variant="ghost" size="sm" class="ml-auto h-6 px-2" onclick={() => updateError = null}>
+						<Button
+							variant="ghost"
+							size="sm"
+							class="ml-auto h-6 px-2"
+							onclick={() => (updateError = null)}
+						>
 							<Icon icon="mdi:close" class="h-4 w-4" />
 						</Button>
 					</div>
@@ -271,18 +281,20 @@
 				<div class="grid grid-cols-2 gap-3">
 					<!-- Status Dropdown -->
 					<div class="space-y-1.5">
-						<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</span>
+						<span class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+							>Status</span
+						>
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger>
 								{#snippet child({ props })}
 									<Button
 										variant="outline"
-										class="w-full justify-between h-9"
+										class="h-9 w-full justify-between"
 										disabled={isUpdating}
 										{...props}
 									>
 										<StatusBadge status={displayIssue?.status ?? 'open'} />
-										<Icon icon="mdi:chevron-down" class="h-4 w-4 ml-2 opacity-50" />
+										<Icon icon="mdi:chevron-down" class="ml-2 h-4 w-4 opacity-50" />
 									</Button>
 								{/snippet}
 							</DropdownMenu.Trigger>
@@ -294,7 +306,7 @@
 									>
 										<StatusBadge status={option.value} />
 										{#if displayIssue.status === option.value}
-											<Icon icon="mdi:check" class="h-4 w-4 ml-auto" />
+											<Icon icon="mdi:check" class="ml-auto h-4 w-4" />
 										{/if}
 									</DropdownMenu.Item>
 								{/each}
@@ -304,18 +316,20 @@
 
 					<!-- Priority Dropdown -->
 					<div class="space-y-1.5">
-						<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Priority</span>
+						<span class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+							>Priority</span
+						>
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger>
 								{#snippet child({ props })}
 									<Button
 										variant="outline"
-										class="w-full justify-between h-9"
+										class="h-9 w-full justify-between"
 										disabled={isUpdating}
 										{...props}
 									>
 										<PriorityBadge priority={formatPriority(displayIssue?.priority ?? 2)} />
-										<Icon icon="mdi:chevron-down" class="h-4 w-4 ml-2 opacity-50" />
+										<Icon icon="mdi:chevron-down" class="ml-2 h-4 w-4 opacity-50" />
 									</Button>
 								{/snippet}
 							</DropdownMenu.Trigger>
@@ -327,7 +341,7 @@
 									>
 										<PriorityBadge priority={formatPriority(option.value)} />
 										{#if displayIssue.priority === option.value}
-											<Icon icon="mdi:check" class="h-4 w-4 ml-auto" />
+											<Icon icon="mdi:check" class="ml-auto h-4 w-4" />
 										{/if}
 									</DropdownMenu.Item>
 								{/each}
@@ -339,7 +353,9 @@
 				<!-- Labels -->
 				{#if displayIssue.labels.length > 0}
 					<div class="space-y-1.5">
-						<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Labels</span>
+						<span class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+							>Labels</span
+						>
 						<div class="flex flex-wrap gap-1.5">
 							{#each displayIssue.labels as label (label)}
 								<Badge variant="secondary" class="text-xs">{label}</Badge>
@@ -350,11 +366,13 @@
 
 				<!-- Description - Always Editable -->
 				<div class="space-y-1.5">
-					<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</span>
+					<span class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+						>Description</span
+					>
 					<Textarea
 						bind:value={editDescription}
 						oninput={scheduleAutoSave}
-						class="min-h-[140px] resize-y border-transparent hover:border-input focus:border-input bg-muted/30"
+						class="min-h-[140px] resize-y border-transparent bg-muted/30 hover:border-input focus:border-input"
 						placeholder="Add a description..."
 					/>
 				</div>
@@ -366,13 +384,18 @@
 					<div class="space-y-3">
 						{#if displayIssue.blockedBy.length > 0}
 							<div class="space-y-1.5">
-								<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+								<span
+									class="flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase"
+								>
 									<Icon icon="mdi:block-helper" class="h-3.5 w-3.5 text-red-500" />
 									Blocked By
 								</span>
 								<div class="flex flex-wrap gap-1.5">
 									{#each displayIssue.blockedBy as blockerId (blockerId)}
-										<Badge variant="outline" class="text-xs border-red-200 text-red-700 dark:border-red-800 dark:text-red-300">
+										<Badge
+											variant="outline"
+											class="border-red-200 text-xs text-red-700 dark:border-red-800 dark:text-red-300"
+										>
 											{blockerId}
 										</Badge>
 									{/each}
@@ -382,13 +405,18 @@
 
 						{#if displayIssue.blocks.length > 0}
 							<div class="space-y-1.5">
-								<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+								<span
+									class="flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase"
+								>
 									<Icon icon="mdi:arrow-right-bold" class="h-3.5 w-3.5 text-orange-500" />
 									Blocks
 								</span>
 								<div class="flex flex-wrap gap-1.5">
 									{#each displayIssue.blocks as blockedId (blockedId)}
-										<Badge variant="outline" class="text-xs border-orange-200 text-orange-700 dark:border-orange-800 dark:text-orange-300">
+										<Badge
+											variant="outline"
+											class="border-orange-200 text-xs text-orange-700 dark:border-orange-800 dark:text-orange-300"
+										>
 											{blockedId}
 										</Badge>
 									{/each}
@@ -404,18 +432,24 @@
 				<div class="space-y-2 text-sm">
 					<div class="flex items-center justify-between">
 						<span class="text-muted-foreground">Created</span>
-						<span class="text-foreground" title={formatDate(displayIssue.created)}>{formatRelativeDate(displayIssue.created)}</span>
+						<span class="text-foreground" title={formatDate(displayIssue.created)}
+							>{formatRelativeDate(displayIssue.created)}</span
+						>
 					</div>
 					{#if displayIssue.updated}
 						<div class="flex items-center justify-between">
 							<span class="text-muted-foreground">Updated</span>
-							<span class="text-foreground" title={formatDate(displayIssue.updated)}>{formatRelativeDate(displayIssue.updated)}</span>
+							<span class="text-foreground" title={formatDate(displayIssue.updated)}
+								>{formatRelativeDate(displayIssue.updated)}</span
+							>
 						</div>
 					{/if}
 					{#if displayIssue.closed}
 						<div class="flex items-center justify-between">
 							<span class="text-muted-foreground">Closed</span>
-							<span class="text-foreground" title={formatDate(displayIssue.closed)}>{formatRelativeDate(displayIssue.closed)}</span>
+							<span class="text-foreground" title={formatDate(displayIssue.closed)}
+								>{formatRelativeDate(displayIssue.closed)}</span
+							>
 						</div>
 					{/if}
 					{#if displayIssue.parentId}
@@ -427,7 +461,7 @@
 				</div>
 			</div>
 		{:else}
-			<div class="flex items-center justify-center h-64">
+			<div class="flex h-64 items-center justify-center">
 				<p class="text-muted-foreground">No issue selected</p>
 			</div>
 		{/if}

@@ -40,7 +40,7 @@
 </script>
 
 <Table.Row
-	class="hover:bg-muted/50 cursor-pointer transition-colors"
+	class="cursor-pointer transition-colors hover:bg-muted/50"
 	onclick={handleClick}
 	onkeydown={handleKeydown}
 	tabindex={0}
@@ -58,10 +58,10 @@
 			{#if issue.labels.length > 0}
 				<div class="flex gap-1">
 					{#each issue.labels.slice(0, 2) as label (label)}
-						<span class="bg-muted rounded-full px-2 py-0.5 text-xs">{label}</span>
+						<span class="rounded-full bg-muted px-2 py-0.5 text-xs">{label}</span>
 					{/each}
 					{#if issue.labels.length > 2}
-						<span class="text-muted-foreground text-xs">+{issue.labels.length - 2}</span>
+						<span class="text-xs text-muted-foreground">+{issue.labels.length - 2}</span>
 					{/if}
 				</div>
 			{/if}
@@ -72,7 +72,7 @@
 	<Table.Cell>
 		<div class="flex items-center gap-2">
 			<TypeIcon type={issue.type} size={18} />
-			<span class="text-muted-foreground text-sm capitalize">{issue.type}</span>
+			<span class="text-sm text-muted-foreground capitalize">{issue.type}</span>
 		</div>
 	</Table.Cell>
 
@@ -87,7 +87,7 @@
 	</Table.Cell>
 
 	<!-- Created Column -->
-	<Table.Cell class="text-muted-foreground text-sm">
+	<Table.Cell class="text-sm text-muted-foreground">
 		{formatDate(issue.created)}
 	</Table.Cell>
 </Table.Row>

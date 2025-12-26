@@ -40,39 +40,34 @@
 		<div class="flex flex-col gap-2">
 			<!-- ID and blocked indicator -->
 			<div class="flex items-center justify-between">
-				<span class="text-muted-foreground font-mono text-xs">{issue.id}</span>
+				<span class="font-mono text-xs text-muted-foreground">{issue.id}</span>
 				{#if isBlocked}
-					<Icon
-						icon="mdi:block-helper"
-						class="h-4 w-4 text-red-500 dark:text-red-400"
-					/>
+					<Icon icon="mdi:block-helper" class="h-4 w-4 text-red-500 dark:text-red-400" />
 				{/if}
 			</div>
 
 			<!-- Title -->
-			<h4 class="line-clamp-2 text-sm font-medium leading-tight">{issue.title}</h4>
+			<h4 class="line-clamp-2 text-sm leading-tight font-medium">{issue.title}</h4>
 
 			<!-- Type and Priority -->
 			<div class="flex items-center justify-between">
 				<div class="flex items-center gap-2">
 					<TypeIcon type={issue.type} size={14} />
-					<span class="text-muted-foreground text-xs capitalize">{issue.type}</span>
+					<span class="text-xs text-muted-foreground capitalize">{issue.type}</span>
 				</div>
-				<PriorityBadge priority={priorityLabel} class="text-[10px] px-1.5 py-0" />
+				<PriorityBadge priority={priorityLabel} class="px-1.5 py-0 text-[10px]" />
 			</div>
 
 			<!-- Labels (if any, show first 2) -->
 			{#if issue.labels.length > 0}
 				<div class="flex flex-wrap gap-1">
 					{#each issue.labels.slice(0, 2) as label (label)}
-						<span
-							class="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px]"
-						>
+						<span class="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
 							{label}
 						</span>
 					{/each}
 					{#if issue.labels.length > 2}
-						<span class="text-muted-foreground text-[10px]">
+						<span class="text-[10px] text-muted-foreground">
 							+{issue.labels.length - 2}
 						</span>
 					{/if}

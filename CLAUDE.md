@@ -34,11 +34,13 @@ npm run test             # All tests (unit + e2e)
 ## Architecture
 
 **REST + WebSocket hybrid pattern:**
+
 - REST API (`/api/repos/*`) handles CRUD operations
 - socket.io provides real-time file change events via chokidar file watching
 - State managed with Svelte 5 runes (`$state`, `$derived`) + context API
 
 **Key directories:**
+
 ```
 src/lib/
 ├── server/services/     # Business logic (app-config, file-watcher, repo-validator)
@@ -53,6 +55,7 @@ src/routes/
 ```
 
 **Data storage:**
+
 - `~/.beads-sv/config.json` - Managed repos list
 - `/path/to/repo/.beads/issues/*.md` - Issue markdown files
 
@@ -74,6 +77,7 @@ src/routes/
 ## Testing
 
 Unit tests use Vitest with browser mode:
+
 - Component tests: `src/**/*.svelte.{test,spec}.ts`
 - Server tests: `src/**/*.{test,spec}.ts`
 
@@ -82,6 +86,7 @@ E2E tests in `e2e/` run against the built production version.
 ## Issue Tracking
 
 This project uses `bd` (beads CLI) for issue tracking. See AGENTS.md for workflow details. Key commands:
+
 ```bash
 bd ready              # Find available work
 bd show <id>          # View issue details

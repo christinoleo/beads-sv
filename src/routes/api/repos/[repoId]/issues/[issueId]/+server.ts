@@ -1,6 +1,11 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getIssue, updateIssue, deleteIssue, IssueNotFoundError } from '$lib/server/services/issue-service';
+import {
+	getIssue,
+	updateIssue,
+	deleteIssue,
+	IssueNotFoundError
+} from '$lib/server/services/issue-service';
 import type { UpdateIssueDto } from '$lib/types/beads';
 
 // GET /api/repos/[repoId]/issues/[issueId] - Get single issue

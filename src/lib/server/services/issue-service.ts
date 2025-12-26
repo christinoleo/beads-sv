@@ -1,6 +1,16 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import type { Issue, IssueType, IssueStatus, Priority, IssueFilter, IssueSort, CreateIssueDto, UpdateIssueDto, PaginatedResponse } from '$lib/types/beads';
+import type {
+	Issue,
+	IssueType,
+	IssueStatus,
+	Priority,
+	IssueFilter,
+	IssueSort,
+	CreateIssueDto,
+	UpdateIssueDto,
+	PaginatedResponse
+} from '$lib/types/beads';
 import { parseIssue, serializeIssue } from '$lib/server/parser/issue-parser';
 import { appConfig } from './app-config';
 
@@ -32,7 +42,11 @@ function mapJsonlToIssue(jsonl: JsonlIssue, repoPath: string): Issue {
 
 	// Map type
 	const typeMap: Record<string, IssueType> = {
-		task: 'task', bug: 'bug', feature: 'feature', epic: 'epic', chore: 'chore'
+		task: 'task',
+		bug: 'bug',
+		feature: 'feature',
+		epic: 'epic',
+		chore: 'chore'
 	};
 	const type = typeMap[jsonl.issue_type] || 'task';
 
@@ -42,12 +56,12 @@ function mapJsonlToIssue(jsonl: JsonlIssue, repoPath: string): Issue {
 	// Process dependencies once
 	const deps = jsonl.dependencies ?? [];
 	const blockedBy = deps
-		.filter(d => d.issue_id === jsonl.id && d.type === 'blocks')
-		.map(d => d.depends_on_id);
+		.filter((d) => d.issue_id === jsonl.id && d.type === 'blocks')
+		.map((d) => d.depends_on_id);
 	const blocks = deps
-		.filter(d => d.depends_on_id === jsonl.id && d.type === 'blocks')
-		.map(d => d.issue_id);
-	const parentDep = deps.find(d => d.issue_id === jsonl.id && d.type === 'parent-child');
+		.filter((d) => d.depends_on_id === jsonl.id && d.type === 'blocks')
+		.map((d) => d.issue_id);
+	const parentDep = deps.find((d) => d.issue_id === jsonl.id && d.type === 'parent-child');
 
 	return {
 		id: jsonl.id,
@@ -107,7 +121,12 @@ export async function listIssues(
 	repoId: string,
 	options: { filter?: IssueFilter; sort?: IssueSort; page?: number; pageSize?: number } = {}
 ): Promise<PaginatedResponse<Issue>> {
-	const { filter = {}, sort = { field: 'created', direction: 'desc' }, page = 1, pageSize = 50 } = options;
+	const {
+		filter = {},
+		sort = { field: 'created', direction: 'desc' },
+		page = 1,
+		pageSize = 50
+	} = options;
 
 	const repo = await appConfig.getRepo(repoId);
 	if (!repo) throw new Error('Repository not found');
@@ -203,7 +222,7 @@ export async function getIssue(repoId: string, issueId: string): Promise<Issue> 
 
 	// Try JSONL first
 	const issues = await loadIssuesFromJsonl(repo.path);
-	const jsonlIssue = issues.find(i => i.id === issueId);
+	const jsonlIssue = issues.find((i) => i.id === issueId);
 	if (jsonlIssue) return jsonlIssue;
 
 	// Fallback to markdown file
@@ -256,7 +275,11 @@ export async function createIssue(repoId: string, dto: CreateIssueDto): Promise<
 	return issue;
 }
 
-export async function updateIssue(repoId: string, issueId: string, dto: UpdateIssueDto): Promise<Issue> {
+export async function updateIssue(
+	repoId: string,
+	issueId: string,
+	dto: UpdateIssueDto
+): Promise<Issue> {
 	const existing = await getIssue(repoId, issueId);
 
 	const updated: Issue = {
@@ -280,7 +303,9 @@ export async function deleteIssue(repoId: string, issueId: string): Promise<void
 }
 
 // Enrich a repo with issue counts
-export async function enrichRepoWithCounts<T extends { id: string }>(repo: T): Promise<T & { issueCount: number; openCount: number }> {
+export async function enrichRepoWithCounts<T extends { id: string }>(
+	repo: T
+): Promise<T & { issueCount: number; openCount: number }> {
 	try {
 		// Load all issues to get accurate counts (no pagination limit)
 		const repoData = await appConfig.getRepo(repo.id);
@@ -289,7 +314,7 @@ export async function enrichRepoWithCounts<T extends { id: string }>(repo: T): P
 		}
 
 		const issues = await loadIssuesFromJsonl(repoData.path);
-		const openCount = issues.filter(i => i.status !== 'closed').length;
+		const openCount = issues.filter((i) => i.status !== 'closed').length;
 
 		return {
 			...repo,
@@ -307,6 +332,8 @@ export async function enrichRepoWithCounts<T extends { id: string }>(repo: T): P
 }
 
 // Enrich multiple repos in parallel
-export async function enrichReposWithCounts<T extends { id: string }>(repos: T[]): Promise<(T & { issueCount: number; openCount: number })[]> {
+export async function enrichReposWithCounts<T extends { id: string }>(
+	repos: T[]
+): Promise<(T & { issueCount: number; openCount: number })[]> {
 	return Promise.all(repos.map(enrichRepoWithCounts));
 }

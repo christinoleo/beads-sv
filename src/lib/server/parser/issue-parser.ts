@@ -39,7 +39,11 @@ export function parseIssue(content: string, filePath: string): Issue {
 		.toLowerCase()
 		.replace('-', '_') as IssueStatus;
 	const priority = parseInt(extractMatch(content, METADATA_PATTERNS.priority, '2'), 10) as Priority;
-	const created = extractMatch(content, METADATA_PATTERNS.created, new Date().toISOString().split('T')[0]);
+	const created = extractMatch(
+		content,
+		METADATA_PATTERNS.created,
+		new Date().toISOString().split('T')[0]
+	);
 	const updated = extractMatch(content, METADATA_PATTERNS.updated, undefined);
 	const closed = extractMatch(content, METADATA_PATTERNS.closed, undefined);
 	const labelsStr = extractMatch(content, METADATA_PATTERNS.labels, '');
@@ -48,9 +52,24 @@ export function parseIssue(content: string, filePath: string): Issue {
 	const blocksStr = extractMatch(content, METADATA_PATTERNS.blocks, '');
 
 	// Parse arrays
-	const labels = labelsStr ? labelsStr.split(',').map((l) => l.trim()).filter(Boolean) : [];
-	const blockedBy = blockedByStr ? blockedByStr.split(',').map((l) => l.trim()).filter(Boolean) : [];
-	const blocks = blocksStr ? blocksStr.split(',').map((l) => l.trim()).filter(Boolean) : [];
+	const labels = labelsStr
+		? labelsStr
+				.split(',')
+				.map((l) => l.trim())
+				.filter(Boolean)
+		: [];
+	const blockedBy = blockedByStr
+		? blockedByStr
+				.split(',')
+				.map((l) => l.trim())
+				.filter(Boolean)
+		: [];
+	const blocks = blocksStr
+		? blocksStr
+				.split(',')
+				.map((l) => l.trim())
+				.filter(Boolean)
+		: [];
 
 	// Parse description section
 	const description = extractSection(content, 'Description') || '';
@@ -113,8 +132,16 @@ export function serializeIssue(issue: Issue): string {
 }
 
 function extractMatch(content: string, pattern: RegExp, defaultValue: string): string;
-function extractMatch(content: string, pattern: RegExp, defaultValue: undefined): string | undefined;
-function extractMatch(content: string, pattern: RegExp, defaultValue: string | undefined): string | undefined {
+function extractMatch(
+	content: string,
+	pattern: RegExp,
+	defaultValue: undefined
+): string | undefined;
+function extractMatch(
+	content: string,
+	pattern: RegExp,
+	defaultValue: string | undefined
+): string | undefined {
 	const match = content.match(pattern);
 	return match?.[1]?.trim() ?? defaultValue;
 }

@@ -116,7 +116,9 @@
 	}
 
 	// Clear scan result when folder path changes (but not during initial mount)
-	let shouldClearOnPathChange = $derived(folderPath !== previousFolderPath && previousFolderPath !== '');
+	let shouldClearOnPathChange = $derived(
+		folderPath !== previousFolderPath && previousFolderPath !== ''
+	);
 
 	$effect(() => {
 		if (shouldClearOnPathChange && scanResult) {
@@ -129,7 +131,7 @@
 	<Dialog.Content class="sm:max-w-lg">
 		<Dialog.Header>
 			<Dialog.Title class="flex items-center gap-2">
-				<Icon icon="mdi:folder-search" class="w-5 h-5" />
+				<Icon icon="mdi:folder-search" class="h-5 w-5" />
 				Import Repositories
 			</Dialog.Title>
 			<Dialog.Description>
@@ -155,9 +157,9 @@
 						disabled={!folderPath.trim() || isScanning || isImporting}
 					>
 						{#if isScanning}
-							<Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
+							<Icon icon="mdi:loading" class="h-4 w-4 animate-spin" />
 						{:else}
-							<Icon icon="mdi:magnify" class="w-4 h-4" />
+							<Icon icon="mdi:magnify" class="h-4 w-4" />
 						{/if}
 						Scan
 					</Button>
@@ -172,25 +174,25 @@
 					aria-checked={recursive}
 					onclick={toggleRecursive}
 					disabled={isScanning || isImporting}
-					class="w-4 h-4 border rounded flex items-center justify-center transition-colors
-						{recursive
-						? 'bg-primary border-primary text-primary-foreground'
-						: 'border-input bg-background'}
-						disabled:opacity-50 disabled:cursor-not-allowed"
+					class="flex h-4 w-4 items-center justify-center rounded border transition-colors
+						{recursive ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-background'}
+						disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					{#if recursive}
-						<Icon icon="mdi:check" class="w-3 h-3" />
+						<Icon icon="mdi:check" class="h-3 w-3" />
 					{/if}
 				</button>
-				<label for="recursive-checkbox" class="text-sm cursor-pointer select-none">
+				<label for="recursive-checkbox" class="cursor-pointer text-sm select-none">
 					Search subdirectories recursively
 				</label>
 			</div>
 
 			{#if scanError}
-				<div class="p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-950 dark:border-red-900">
-					<p class="text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
-						<Icon icon="mdi:alert-circle" class="w-4 h-4 shrink-0" />
+				<div
+					class="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950"
+				>
+					<p class="flex items-center gap-2 text-sm text-red-800 dark:text-red-200">
+						<Icon icon="mdi:alert-circle" class="h-4 w-4 shrink-0" />
 						{scanError}
 					</p>
 				</div>
@@ -199,22 +201,22 @@
 			{#if scanResult}
 				<div class="space-y-3">
 					<div class="flex items-center gap-2 text-sm font-medium">
-						<Icon icon="mdi:folder-check" class="w-4 h-4" />
+						<Icon icon="mdi:folder-check" class="h-4 w-4" />
 						Scan Results
 					</div>
 
 					{#if scanResult.imported.length > 0}
 						<div class="space-y-2">
-							<p class="text-xs text-muted-foreground flex items-center gap-1">
-								<Icon icon="mdi:check-circle" class="w-3 h-3 text-green-600" />
+							<p class="flex items-center gap-1 text-xs text-muted-foreground">
+								<Icon icon="mdi:check-circle" class="h-3 w-3 text-green-600" />
 								Found {scanResult.imported.length} repositories to import:
 							</p>
-							<div class="max-h-40 overflow-y-auto space-y-1 rounded-lg border p-2">
+							<div class="max-h-40 space-y-1 overflow-y-auto rounded-lg border p-2">
 								{#each scanResult.imported as repo (repo.id)}
-									<div class="flex items-center gap-2 text-sm py-1 px-2 rounded hover:bg-muted/50">
-										<Icon icon="mdi:git" class="w-4 h-4 text-muted-foreground shrink-0" />
-										<span class="truncate flex-1" title={repo.path}>{repo.name}</span>
-										<Badge variant="outline" class="text-xs shrink-0">{repo.config.prefix}</Badge>
+									<div class="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-muted/50">
+										<Icon icon="mdi:git" class="h-4 w-4 shrink-0 text-muted-foreground" />
+										<span class="flex-1 truncate" title={repo.path}>{repo.name}</span>
+										<Badge variant="outline" class="shrink-0 text-xs">{repo.config.prefix}</Badge>
 									</div>
 								{/each}
 							</div>
@@ -223,13 +225,15 @@
 
 					{#if scanResult.skipped.length > 0}
 						<div class="space-y-2">
-							<p class="text-xs text-muted-foreground flex items-center gap-1">
-								<Icon icon="mdi:skip-next" class="w-3 h-3 text-amber-600" />
+							<p class="flex items-center gap-1 text-xs text-muted-foreground">
+								<Icon icon="mdi:skip-next" class="h-3 w-3 text-amber-600" />
 								Skipping {scanResult.skipped.length} already managed:
 							</p>
-							<div class="max-h-24 overflow-y-auto space-y-1 text-xs text-muted-foreground rounded-lg border p-2">
+							<div
+								class="max-h-24 space-y-1 overflow-y-auto rounded-lg border p-2 text-xs text-muted-foreground"
+							>
 								{#each scanResult.skipped as skippedPath (skippedPath)}
-									<div class="truncate py-0.5 px-2" title={skippedPath}>{skippedPath}</div>
+									<div class="truncate px-2 py-0.5" title={skippedPath}>{skippedPath}</div>
 								{/each}
 							</div>
 						</div>
@@ -237,13 +241,15 @@
 
 					{#if scanResult.errors.length > 0}
 						<div class="space-y-2">
-							<p class="text-xs text-muted-foreground flex items-center gap-1">
-								<Icon icon="mdi:alert" class="w-3 h-3 text-red-600" />
+							<p class="flex items-center gap-1 text-xs text-muted-foreground">
+								<Icon icon="mdi:alert" class="h-3 w-3 text-red-600" />
 								{scanResult.errors.length} errors:
 							</p>
-							<div class="max-h-24 overflow-y-auto space-y-1 text-xs rounded-lg border border-red-200 dark:border-red-900 p-2">
+							<div
+								class="max-h-24 space-y-1 overflow-y-auto rounded-lg border border-red-200 p-2 text-xs dark:border-red-900"
+							>
 								{#each scanResult.errors as error (error.path)}
-									<div class="py-0.5 px-2 text-red-700 dark:text-red-400">
+									<div class="px-2 py-0.5 text-red-700 dark:text-red-400">
 										<span class="font-mono">{error.path}</span>: {error.error}
 									</div>
 								{/each}
@@ -252,9 +258,11 @@
 					{/if}
 
 					{#if scanResult.imported.length === 0 && scanResult.skipped.length === 0 && scanResult.errors.length === 0}
-						<div class="p-4 rounded-lg bg-muted/50 text-center">
-							<Icon icon="mdi:folder-off" class="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-							<p class="text-sm text-muted-foreground">No beads repositories found in this folder.</p>
+						<div class="rounded-lg bg-muted/50 p-4 text-center">
+							<Icon icon="mdi:folder-off" class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+							<p class="text-sm text-muted-foreground">
+								No beads repositories found in this folder.
+							</p>
 						</div>
 					{/if}
 				</div>
@@ -268,10 +276,10 @@
 				disabled={!scanResult || scanResult.imported.length === 0 || isImporting}
 			>
 				{#if isImporting}
-					<Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
+					<Icon icon="mdi:loading" class="h-4 w-4 animate-spin" />
 					Importing...
 				{:else}
-					<Icon icon="mdi:import" class="w-4 h-4" />
+					<Icon icon="mdi:import" class="h-4 w-4" />
 					Import {scanResult?.imported.length ?? 0} Repositories
 				{/if}
 			</Button>

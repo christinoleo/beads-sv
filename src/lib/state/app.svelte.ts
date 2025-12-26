@@ -161,7 +161,9 @@ export function setAppState(initialRepos: ManagedRepo[] = []): AppStateContext {
 export function getAppState(): AppStateContext {
 	const state = getContext<AppStateContext>(APP_STATE_KEY);
 	if (!state) {
-		throw new Error('App state not found. Did you forget to call setAppState in a parent component?');
+		throw new Error(
+			'App state not found. Did you forget to call setAppState in a parent component?'
+		);
 	}
 	return state;
 }

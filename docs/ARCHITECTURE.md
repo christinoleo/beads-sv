@@ -187,39 +187,44 @@ const { issues, filters, boardColumns } = getContext('issues');
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Framework | SvelteKit 5 |
-| UI Components | shadcn-svelte |
-| Icons | Iconify (@iconify/svelte) |
-| Styling | Tailwind CSS |
-| Real-time | socket.io |
-| File Watching | chokidar |
-| Markdown | marked + dompurify |
-| State | Svelte 5 runes ($state, $derived) |
+| Layer         | Technology                        |
+| ------------- | --------------------------------- |
+| Framework     | SvelteKit 5                       |
+| UI Components | shadcn-svelte                     |
+| Icons         | Iconify (@iconify/svelte)         |
+| Styling       | Tailwind CSS                      |
+| Real-time     | socket.io                         |
+| File Watching | chokidar                          |
+| Markdown      | marked + dompurify                |
+| State         | Svelte 5 runes ($state, $derived) |
 
 ## Key Design Decisions
 
 ### 1. REST + socket.io Hybrid
+
 - REST for CRUD: Simpler, works with SvelteKit form actions, easy to debug
 - socket.io for events: Real-time file change notifications, room-based subscriptions
 
 ### 2. Server-side Config Storage
+
 - `~/.beads-sv/config.json` stores managed repos list
 - Persists across browser sessions
 - Single source of truth
 
 ### 3. Markdown Issue Format
+
 - Compatible with existing beads CLI
 - Human-readable in git diffs
 - Custom parser (non-standard frontmatter format)
 
 ### 4. Multi-repo Architecture
+
 - One beads-sv instance manages N repositories
 - Each repo has independent .beads directory
 - Cross-repo dashboard for overview
 
 ### 5. shadcn-svelte Components
+
 - Consistent, accessible UI primitives
 - Customizable via Tailwind
 - Reduces custom component code

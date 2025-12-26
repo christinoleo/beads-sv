@@ -45,17 +45,19 @@ export function initSocketServer(httpServer: any): TypedSocketIOServer {
 		return io as TypedSocketIOServer;
 	}
 
-	io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
-		httpServer,
-		{
-			path: '/socket.io',
-			cors: {
-				origin: '*',
-				methods: ['GET', 'POST']
-			},
-			transports: ['websocket', 'polling']
-		}
-	);
+	io = new SocketIOServer<
+		ClientToServerEvents,
+		ServerToClientEvents,
+		InterServerEvents,
+		SocketData
+	>(httpServer, {
+		path: '/socket.io',
+		cors: {
+			origin: '*',
+			methods: ['GET', 'POST']
+		},
+		transports: ['websocket', 'polling']
+	});
 
 	io.on('connection', (socket) => {
 		console.log(`[Socket.io] Client connected: ${socket.id}`);

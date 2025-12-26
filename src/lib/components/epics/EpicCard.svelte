@@ -76,11 +76,11 @@
 			<div class="flex-1 space-y-1">
 				<div class="flex items-center gap-2">
 					<TypeIcon type="epic" size={20} />
-					<span class="text-muted-foreground font-mono text-sm">{epic.id}</span>
+					<span class="font-mono text-sm text-muted-foreground">{epic.id}</span>
 				</div>
 				<button
 					type="button"
-					class="text-left hover:underline focus:outline-none focus:underline"
+					class="text-left hover:underline focus:underline focus:outline-none"
 					onclick={handleEpicClick}
 					onkeydown={(e) => handleKeydown(e, handleEpicClick)}
 				>
@@ -93,7 +93,7 @@
 			</div>
 		</div>
 		{#if descriptionPreview}
-			<p class="text-muted-foreground mt-2 text-sm">{descriptionPreview}</p>
+			<p class="mt-2 text-sm text-muted-foreground">{descriptionPreview}</p>
 		{/if}
 	</Card.Header>
 
@@ -122,12 +122,7 @@
 
 		<!-- Expand/Collapse Button -->
 		{#if children.length > 0}
-			<Button
-				variant="ghost"
-				size="sm"
-				class="w-full justify-between"
-				onclick={handleToggleExpand}
-			>
+			<Button variant="ghost" size="sm" class="w-full justify-between" onclick={handleToggleExpand}>
 				<span>{isExpanded ? 'Hide' : 'Show'} child issues ({children.length})</span>
 				<Icon
 					icon={isExpanded ? 'mdi:chevron-up' : 'mdi:chevron-down'}
@@ -137,17 +132,17 @@
 
 			<!-- Collapsible Child Issues -->
 			{#if isExpanded}
-				<div class="border-muted space-y-2 border-t pt-4">
+				<div class="space-y-2 border-t border-muted pt-4">
 					{#each children as child (child.id)}
 						<button
 							type="button"
-							class="hover:bg-muted/50 flex w-full items-center justify-between rounded-md p-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+							class="flex w-full items-center justify-between rounded-md p-2 text-left transition-colors hover:bg-muted/50 focus:ring-2 focus:ring-offset-2 focus:outline-none"
 							onclick={() => handleChildClick(child)}
 							onkeydown={(e) => handleKeydown(e, () => handleChildClick(child))}
 						>
 							<div class="flex items-center gap-3">
 								<TypeIcon type={child.type} size={16} />
-								<span class="text-muted-foreground font-mono text-xs">{child.id}</span>
+								<span class="font-mono text-xs text-muted-foreground">{child.id}</span>
 								<span class="text-sm">{child.title}</span>
 							</div>
 							<div class="flex items-center gap-2">
@@ -158,7 +153,7 @@
 				</div>
 			{/if}
 		{:else}
-			<p class="text-muted-foreground text-center text-sm">No child issues</p>
+			<p class="text-center text-sm text-muted-foreground">No child issues</p>
 		{/if}
 	</Card.Content>
 </Card.Root>

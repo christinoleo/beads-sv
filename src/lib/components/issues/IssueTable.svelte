@@ -57,7 +57,7 @@
 				{#each columns as column (column.key)}
 					<Table.Head
 						class={column.sortable
-							? 'hover:bg-muted/50 cursor-pointer select-none transition-colors'
+							? 'cursor-pointer transition-colors select-none hover:bg-muted/50'
 							: ''}
 						onclick={() => handleHeaderClick(column)}
 						onkeydown={(e) => handleHeaderKeydown(e, column)}
@@ -74,7 +74,7 @@
 							{#if column.sortable}
 								<Icon
 									icon={getSortIcon(column)}
-									class="text-muted-foreground h-4 w-4 {sort.field === column.sortKey
+									class="h-4 w-4 text-muted-foreground {sort.field === column.sortKey
 										? 'text-foreground'
 										: ''}"
 								/>
@@ -98,7 +98,7 @@
 				<Table.Row>
 					<Table.Cell colspan={columns.length} class="h-32 text-center">
 						<div class="flex flex-col items-center justify-center gap-2">
-							<Icon icon="mdi:folder-open-outline" class="text-muted-foreground h-10 w-10" />
+							<Icon icon="mdi:folder-open-outline" class="h-10 w-10 text-muted-foreground" />
 							<span class="text-muted-foreground">No issues found</span>
 						</div>
 					</Table.Cell>

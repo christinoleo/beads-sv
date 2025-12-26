@@ -28,9 +28,4 @@
 	};
 </script>
 
-<Icon
-	icon={typeIcons[type]}
-	width={size}
-	height={size}
-	class="{typeColors[type]} {className}"
-/>
+<Icon icon={typeIcons[type]} width={size} height={size} class="{typeColors[type]} {className}" />

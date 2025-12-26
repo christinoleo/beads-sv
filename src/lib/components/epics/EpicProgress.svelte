@@ -43,7 +43,7 @@
 			<span class="font-medium">{percentage}%</span>
 		</div>
 	{/if}
-	<div class={cn('bg-muted w-full overflow-hidden rounded-full', sizeClasses[size])}>
+	<div class={cn('w-full overflow-hidden rounded-full bg-muted', sizeClasses[size])}>
 		<div
 			class={cn('h-full transition-all duration-300 ease-out', progressColor)}
 			style="width: {percentage}%"
