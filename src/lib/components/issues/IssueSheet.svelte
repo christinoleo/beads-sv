@@ -11,8 +11,6 @@
 	import PriorityBadge from '$lib/components/shared/PriorityBadge.svelte';
 	import TypeIcon from '$lib/components/shared/TypeIcon.svelte';
 	import type { Issue, IssueStatus, IssueType, Priority } from '$lib/types/beads';
-	import { marked } from 'marked';
-	import DOMPurify from 'dompurify';
 
 	interface Props {
 		issue: Issue | null;
@@ -23,13 +21,13 @@
 		onEdit?: (issue: Issue) => void;
 	}
 
-	let { issue, open = $bindable(false), repoId, onOpenChange, onIssueUpdate, onEdit }: Props = $props();
+	let { issue, open = $bindable(false), repoId, onOpenChange, onIssueUpdate }: Props = $props();
 
 	let isUpdating = $state(false);
 	let updateError = $state<string | null>(null);
+	let saveStatus = $state<'idle' | 'saving' | 'saved'>('idle');
 
-	// Inline editing state
-	let isEditing = $state(false);
+	// Local editable values
 	let editTitle = $state('');
 	let editDescription = $state('');
 	let editType = $state<IssueType>('task');
@@ -37,10 +35,13 @@
 	// Keep a local copy of the issue to show during close animation
 	let displayIssue = $state<Issue | null>(null);
 
-	// Update displayIssue when issue changes, but only when opening or when issue updates
+	// Update displayIssue and local values when issue changes
 	$effect(() => {
 		if (issue) {
 			displayIssue = issue;
+			editTitle = issue.title;
+			editDescription = issue.description || '';
+			editType = issue.type;
 		}
 	});
 
@@ -49,7 +50,7 @@
 		if (!open && displayIssue) {
 			const timeout = setTimeout(() => {
 				displayIssue = null;
-				isEditing = false;
+				saveStatus = 'idle';
 			}, 300); // Match sheet animation duration
 			return () => clearTimeout(timeout);
 		}
@@ -77,33 +78,33 @@
 		{ value: 'chore', label: 'Chore' }
 	];
 
-	function startEditing() {
-		if (!displayIssue) return;
-		editTitle = displayIssue.title;
-		editDescription = displayIssue.description || '';
-		editType = displayIssue.type;
-		isEditing = true;
+	// Debounced auto-save for text fields
+	let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	function scheduleAutoSave() {
+		if (saveTimeout) clearTimeout(saveTimeout);
+		saveTimeout = setTimeout(() => {
+			saveTextChanges();
+		}, 800);
 	}
 
-	function cancelEditing() {
-		isEditing = false;
-		updateError = null;
-	}
-
-	async function saveChanges() {
+	async function saveTextChanges() {
 		if (!displayIssue) return;
 
 		const updates: Partial<Issue> = {};
-		if (editTitle !== displayIssue.title) updates.title = editTitle;
+		if (editTitle.trim() && editTitle !== displayIssue.title) updates.title = editTitle.trim();
 		if (editDescription !== displayIssue.description) updates.description = editDescription;
-		if (editType !== displayIssue.type) updates.type = editType;
 
-		if (Object.keys(updates).length === 0) {
-			isEditing = false;
-			return;
-		}
+		if (Object.keys(updates).length === 0) return;
+
+		await saveUpdates(updates);
+	}
+
+	async function saveUpdates(updates: Partial<Issue>) {
+		if (!displayIssue) return;
 
 		isUpdating = true;
+		saveStatus = 'saving';
 		updateError = null;
 
 		try {
@@ -121,9 +122,13 @@
 			const result = await response.json();
 			displayIssue = result.data;
 			onIssueUpdate?.(result.data);
-			isEditing = false;
+			saveStatus = 'saved';
+			setTimeout(() => {
+				if (saveStatus === 'saved') saveStatus = 'idle';
+			}, 2000);
 		} catch (e) {
 			updateError = e instanceof Error ? e.message : 'An error occurred';
+			saveStatus = 'idle';
 		} finally {
 			isUpdating = false;
 		}
@@ -164,48 +169,17 @@
 		return formatDate(dateString);
 	}
 
-	function renderMarkdownSync(content: string): string {
-		if (!content) return '';
-		// marked.parse can return string synchronously when async option is not set
-		const html = marked.parse(content, { async: false }) as string;
-		return DOMPurify.sanitize(html);
-	}
-
-	const renderedDescription = $derived(displayIssue?.description ? renderMarkdownSync(displayIssue.description) : '');
-
-	async function updateIssue(updates: { status?: IssueStatus; priority?: Priority }) {
-		if (!displayIssue) return;
-
-		isUpdating = true;
-		updateError = null;
-
-		try {
-			const response = await fetch(`/api/repos/${repoId}/issues/${displayIssue.id}`, {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(updates)
-			});
-
-			if (!response.ok) {
-				const error = await response.json();
-				throw new Error(error.message || 'Failed to update issue');
-			}
-
-			const result = await response.json();
-			onIssueUpdate?.(result.data);
-		} catch (e) {
-			updateError = e instanceof Error ? e.message : 'An error occurred';
-		} finally {
-			isUpdating = false;
-		}
-	}
-
 	function handleStatusChange(status: IssueStatus) {
-		updateIssue({ status });
+		saveUpdates({ status });
 	}
 
 	function handlePriorityChange(priority: Priority) {
-		updateIssue({ priority });
+		saveUpdates({ priority });
+	}
+
+	function handleTypeChange(type: IssueType) {
+		editType = type;
+		saveUpdates({ type });
 	}
 
 	function handleOpenChange(newOpen: boolean) {
@@ -218,64 +192,70 @@
 </script>
 
 <Sheet.Root bind:open onOpenChange={handleOpenChange}>
-	<Sheet.Content side="right" class="w-full sm:max-w-xl lg:max-w-2xl overflow-y-auto p-0">
+	<Sheet.Content side="right" class="w-full sm:max-w-xl lg:max-w-2xl overflow-y-auto p-0 flex flex-col">
 		{#if displayIssue}
-			<!-- Header with colored accent -->
-			<div class="bg-muted/50 border-b px-6 py-5">
-				<div class="flex items-start gap-4">
-					{#if isEditing}
-						<!-- Type dropdown when editing -->
-						<DropdownMenu.Root>
-							<DropdownMenu.Trigger>
-								{#snippet child({ props })}
-									<button class="p-2 rounded-lg bg-background shadow-sm border hover:bg-muted/50 transition-colors" {...props}>
-										<TypeIcon type={editType} size={28} />
-									</button>
-								{/snippet}
-							</DropdownMenu.Trigger>
-							<DropdownMenu.Content class="w-40">
-								{#each typeOptions as option (option.value)}
-									<DropdownMenu.Item
-										onclick={() => editType = option.value}
-										class="cursor-pointer"
-									>
-										<TypeIcon type={option.value} size={16} />
-										<span class="ml-2">{option.label}</span>
-										{#if editType === option.value}
-											<Icon icon="mdi:check" class="h-4 w-4 ml-auto" />
-										{/if}
-									</DropdownMenu.Item>
-								{/each}
-							</DropdownMenu.Content>
-						</DropdownMenu.Root>
-					{:else}
-						<div class="p-2 rounded-lg bg-background shadow-sm border">
-							<TypeIcon type={displayIssue.type} size={28} />
-						</div>
-					{/if}
-					<div class="flex-1 min-w-0">
-						{#if isEditing}
-							<Input
-								bind:value={editTitle}
-								class="text-xl font-semibold h-auto py-1 px-2"
-								placeholder="Issue title"
-							/>
-						{:else}
-							<Sheet.Title class="text-xl font-semibold leading-tight pr-8">
-								{displayIssue.title}
-							</Sheet.Title>
-						{/if}
-						<div class="flex items-center gap-2 mt-2">
+			<!-- Header -->
+			<div class="border-b px-6 py-4 shrink-0">
+				<div class="flex items-start gap-3">
+					<!-- Type dropdown -->
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger>
+							{#snippet child({ props })}
+								<button
+									class="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+									{...props}
+								>
+									<TypeIcon type={editType} size={24} />
+								</button>
+							{/snippet}
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content class="w-40">
+							{#each typeOptions as option (option.value)}
+								<DropdownMenu.Item
+									onclick={() => handleTypeChange(option.value)}
+									class="cursor-pointer"
+								>
+									<TypeIcon type={option.value} size={16} />
+									<span class="ml-2">{option.label}</span>
+									{#if editType === option.value}
+										<Icon icon="mdi:check" class="h-4 w-4 ml-auto" />
+									{/if}
+								</DropdownMenu.Item>
+							{/each}
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+
+					<div class="flex-1 min-w-0 space-y-2">
+						<!-- Editable Title -->
+						<Input
+							bind:value={editTitle}
+							oninput={scheduleAutoSave}
+							class="text-lg font-semibold h-auto py-1.5 px-2 border-transparent hover:border-input focus:border-input bg-transparent"
+							placeholder="Issue title"
+						/>
+						<div class="flex items-center gap-2 px-2">
 							<Badge variant="outline" class="font-mono text-xs">
 								{displayIssue.id}
 							</Badge>
-							<span class="text-xs text-muted-foreground capitalize">{isEditing ? editType : displayIssue.type}</span>
+							<!-- Save status indicator -->
+							{#if saveStatus === 'saving'}
+								<span class="text-xs text-muted-foreground flex items-center gap-1">
+									<Icon icon="mdi:loading" class="h-3 w-3 animate-spin" />
+									Saving...
+								</span>
+							{:else if saveStatus === 'saved'}
+								<span class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+									<Icon icon="mdi:check" class="h-3 w-3" />
+									Saved
+								</span>
+							{/if}
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<div class="px-6 py-5 space-y-6">
+			<!-- Scrollable Content -->
+			<div class="flex-1 overflow-y-auto px-6 py-4 space-y-5">
 				<!-- Error Banner -->
 				{#if updateError}
 					<div class="bg-destructive/10 text-destructive rounded-md border border-destructive/20 p-3 flex items-center gap-2">
@@ -287,21 +267,21 @@
 					</div>
 				{/if}
 
-				<!-- Status & Priority Section -->
-				<div class="grid grid-cols-2 gap-4">
+				<!-- Status & Priority Row -->
+				<div class="grid grid-cols-2 gap-3">
 					<!-- Status Dropdown -->
-					<div class="space-y-2">
-						<span class="text-sm font-medium text-muted-foreground">Status</span>
+					<div class="space-y-1.5">
+						<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</span>
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger>
 								{#snippet child({ props })}
 									<Button
 										variant="outline"
-										class="w-full justify-between"
+										class="w-full justify-between h-9"
 										disabled={isUpdating}
 										{...props}
 									>
-										<StatusBadge status={displayIssue.status} />
+										<StatusBadge status={displayIssue?.status ?? 'open'} />
 										<Icon icon="mdi:chevron-down" class="h-4 w-4 ml-2 opacity-50" />
 									</Button>
 								{/snippet}
@@ -323,18 +303,18 @@
 					</div>
 
 					<!-- Priority Dropdown -->
-					<div class="space-y-2">
-						<span class="text-sm font-medium text-muted-foreground">Priority</span>
+					<div class="space-y-1.5">
+						<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Priority</span>
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger>
 								{#snippet child({ props })}
 									<Button
 										variant="outline"
-										class="w-full justify-between"
+										class="w-full justify-between h-9"
 										disabled={isUpdating}
 										{...props}
 									>
-										<PriorityBadge priority={formatPriority(displayIssue.priority)} />
+										<PriorityBadge priority={formatPriority(displayIssue?.priority ?? 2)} />
 										<Icon icon="mdi:chevron-down" class="h-4 w-4 ml-2 opacity-50" />
 									</Button>
 								{/snippet}
@@ -356,54 +336,43 @@
 					</div>
 				</div>
 
-				<Separator />
-
 				<!-- Labels -->
 				{#if displayIssue.labels.length > 0}
-					<div class="space-y-2">
-						<span class="text-sm font-medium text-muted-foreground">Labels</span>
-						<div class="flex flex-wrap gap-2">
+					<div class="space-y-1.5">
+						<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Labels</span>
+						<div class="flex flex-wrap gap-1.5">
 							{#each displayIssue.labels as label (label)}
-								<Badge variant="secondary">{label}</Badge>
+								<Badge variant="secondary" class="text-xs">{label}</Badge>
 							{/each}
 						</div>
 					</div>
 				{/if}
 
-				<!-- Description -->
-				<div class="space-y-2">
-					<span class="text-sm font-medium text-muted-foreground">Description</span>
-					{#if isEditing}
-						<Textarea
-							bind:value={editDescription}
-							class="min-h-[120px] resize-y"
-							placeholder="Add a description... (Markdown supported)"
-						/>
-					{:else if renderedDescription}
-						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-						<div class="prose prose-sm dark:prose-invert max-w-none rounded-md bg-muted/30 p-4" tabindex="0">
-							<!-- Content is sanitized with DOMPurify -->
-							{@html renderedDescription}
-						</div>
-					{:else}
-						<p class="text-sm text-muted-foreground italic">No description provided</p>
-					{/if}
+				<!-- Description - Always Editable -->
+				<div class="space-y-1.5">
+					<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</span>
+					<Textarea
+						bind:value={editDescription}
+						oninput={scheduleAutoSave}
+						class="min-h-[140px] resize-y border-transparent hover:border-input focus:border-input bg-muted/30"
+						placeholder="Add a description..."
+					/>
 				</div>
 
 				<!-- Relationships -->
 				{#if displayIssue.blockedBy.length > 0 || displayIssue.blocks.length > 0}
 					<Separator />
 
-					<div class="space-y-4">
+					<div class="space-y-3">
 						{#if displayIssue.blockedBy.length > 0}
-							<div class="space-y-2">
-								<span class="text-sm font-medium text-muted-foreground flex items-center gap-2">
-									<Icon icon="mdi:block-helper" class="h-4 w-4 text-red-500" />
+							<div class="space-y-1.5">
+								<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+									<Icon icon="mdi:block-helper" class="h-3.5 w-3.5 text-red-500" />
 									Blocked By
 								</span>
-								<div class="flex flex-wrap gap-2">
+								<div class="flex flex-wrap gap-1.5">
 									{#each displayIssue.blockedBy as blockerId (blockerId)}
-										<Badge variant="outline" class="border-red-200 text-red-700 dark:border-red-800 dark:text-red-300">
+										<Badge variant="outline" class="text-xs border-red-200 text-red-700 dark:border-red-800 dark:text-red-300">
 											{blockerId}
 										</Badge>
 									{/each}
@@ -412,14 +381,14 @@
 						{/if}
 
 						{#if displayIssue.blocks.length > 0}
-							<div class="space-y-2">
-								<span class="text-sm font-medium text-muted-foreground flex items-center gap-2">
-									<Icon icon="mdi:arrow-right-bold" class="h-4 w-4 text-orange-500" />
+							<div class="space-y-1.5">
+								<span class="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+									<Icon icon="mdi:arrow-right-bold" class="h-3.5 w-3.5 text-orange-500" />
 									Blocks
 								</span>
-								<div class="flex flex-wrap gap-2">
+								<div class="flex flex-wrap gap-1.5">
 									{#each displayIssue.blocks as blockedId (blockedId)}
-										<Badge variant="outline" class="border-orange-200 text-orange-700 dark:border-orange-800 dark:text-orange-300">
+										<Badge variant="outline" class="text-xs border-orange-200 text-orange-700 dark:border-orange-800 dark:text-orange-300">
 											{blockedId}
 										</Badge>
 									{/each}
@@ -432,56 +401,30 @@
 				<Separator />
 
 				<!-- Metadata -->
-				<div class="space-y-3">
-					<div class="flex items-center justify-between text-sm">
+				<div class="space-y-2 text-sm">
+					<div class="flex items-center justify-between">
 						<span class="text-muted-foreground">Created</span>
-						<span title={formatDate(displayIssue.created)}>{formatRelativeDate(displayIssue.created)}</span>
+						<span class="text-foreground" title={formatDate(displayIssue.created)}>{formatRelativeDate(displayIssue.created)}</span>
 					</div>
 					{#if displayIssue.updated}
-						<div class="flex items-center justify-between text-sm">
-							<span class="text-muted-foreground">Last Modified</span>
-							<span title={formatDate(displayIssue.updated)}>{formatRelativeDate(displayIssue.updated)}</span>
+						<div class="flex items-center justify-between">
+							<span class="text-muted-foreground">Updated</span>
+							<span class="text-foreground" title={formatDate(displayIssue.updated)}>{formatRelativeDate(displayIssue.updated)}</span>
 						</div>
 					{/if}
 					{#if displayIssue.closed}
-						<div class="flex items-center justify-between text-sm">
+						<div class="flex items-center justify-between">
 							<span class="text-muted-foreground">Closed</span>
-							<span title={formatDate(displayIssue.closed)}>{formatRelativeDate(displayIssue.closed)}</span>
+							<span class="text-foreground" title={formatDate(displayIssue.closed)}>{formatRelativeDate(displayIssue.closed)}</span>
 						</div>
 					{/if}
 					{#if displayIssue.parentId}
-						<div class="flex items-center justify-between text-sm">
+						<div class="flex items-center justify-between">
 							<span class="text-muted-foreground">Parent Epic</span>
-							<Badge variant="outline">{displayIssue.parentId}</Badge>
+							<Badge variant="outline" class="text-xs">{displayIssue.parentId}</Badge>
 						</div>
 					{/if}
 				</div>
-			</div>
-
-			<!-- Footer -->
-			<div class="border-t bg-muted/30 px-6 py-4 flex items-center justify-end gap-3">
-				{#if isEditing}
-					<Button variant="outline" onclick={cancelEditing} disabled={isUpdating}>
-						Cancel
-					</Button>
-					<Button onclick={saveChanges} disabled={isUpdating}>
-						{#if isUpdating}
-							<Icon icon="mdi:loading" class="h-4 w-4 mr-2 animate-spin" />
-							Saving...
-						{:else}
-							<Icon icon="mdi:content-save" class="h-4 w-4 mr-2" />
-							Save Changes
-						{/if}
-					</Button>
-				{:else}
-					<Button variant="outline" onclick={() => handleOpenChange(false)}>
-						Close
-					</Button>
-					<Button onclick={startEditing}>
-						<Icon icon="mdi:pencil" class="h-4 w-4 mr-2" />
-						Edit Issue
-					</Button>
-				{/if}
 			</div>
 		{:else}
 			<div class="flex items-center justify-center h-64">

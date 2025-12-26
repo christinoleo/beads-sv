@@ -5,9 +5,24 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Command from '$lib/components/ui/command';
-	import { getAppState } from '$lib/state/app.svelte';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { getAppState, type Theme } from '$lib/state/app.svelte';
 
 	const appState = getAppState();
+
+	const themeOptions: { value: Theme; label: string; icon: string }[] = [
+		{ value: 'light', label: 'Light', icon: 'mdi:weather-sunny' },
+		{ value: 'dark', label: 'Dark', icon: 'mdi:weather-night' },
+		{ value: 'system', label: 'System', icon: 'mdi:laptop' }
+	];
+
+	const currentThemeIcon = $derived(
+		appState.theme === 'dark'
+			? 'mdi:weather-night'
+			: appState.theme === 'light'
+				? 'mdi:weather-sunny'
+				: 'mdi:laptop'
+	);
 
 	// Local state for command dialog that syncs with app state
 	let searchOpen = $state(false);
@@ -114,11 +129,31 @@
 		</kbd>
 	</Button>
 
-	<!-- Theme Toggle (placeholder) -->
-	<Button variant="ghost" size="icon" onclick={() => appState.setTheme(appState.theme === 'dark' ? 'light' : 'dark')}>
-		<Icon icon="mdi:theme-light-dark" class="h-5 w-5" />
-		<span class="sr-only">Toggle theme</span>
-	</Button>
+	<!-- Theme Toggle -->
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger>
+			{#snippet child({ props })}
+				<Button variant="ghost" size="icon" {...props}>
+					<Icon icon={currentThemeIcon} class="h-5 w-5" />
+					<span class="sr-only">Toggle theme</span>
+				</Button>
+			{/snippet}
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content align="end" class="w-36">
+			{#each themeOptions as option (option.value)}
+				<DropdownMenu.Item
+					onclick={() => appState.setTheme(option.value)}
+					class="cursor-pointer"
+				>
+					<Icon icon={option.icon} class="h-4 w-4 mr-2" />
+					<span>{option.label}</span>
+					{#if appState.theme === option.value}
+						<Icon icon="mdi:check" class="h-4 w-4 ml-auto" />
+					{/if}
+				</DropdownMenu.Item>
+			{/each}
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
 </header>
 
 <!-- Search Command Dialog -->

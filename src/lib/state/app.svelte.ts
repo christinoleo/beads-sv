@@ -1,7 +1,9 @@
 import { getContext, setContext } from 'svelte';
+import { browser } from '$app/environment';
 import type { ManagedRepo, AppPreferences } from '$lib/types/beads';
 
 const APP_STATE_KEY = Symbol('app-state');
+const THEME_STORAGE_KEY = 'beads-theme';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -13,12 +15,48 @@ export interface AppState {
 	searchOpen: boolean;
 }
 
+function getInitialTheme(): Theme {
+	if (!browser) return 'system';
+	const stored = localStorage.getItem(THEME_STORAGE_KEY);
+	if (stored === 'light' || stored === 'dark' || stored === 'system') {
+		return stored;
+	}
+	return 'system';
+}
+
+function applyTheme(theme: Theme) {
+	if (!browser) return;
+
+	const root = document.documentElement;
+	const isDark =
+		theme === 'dark' ||
+		(theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+	root.classList.toggle('dark', isDark);
+	localStorage.setItem(THEME_STORAGE_KEY, theme);
+}
+
 export function createAppState(initialRepos: ManagedRepo[] = []) {
 	let repos = $state<ManagedRepo[]>(initialRepos);
 	let currentRepoId = $state<string | null>(null);
 	let sidebarCollapsed = $state(false);
-	let theme = $state<Theme>('system');
+	let theme = $state<Theme>(getInitialTheme());
 	let searchOpen = $state(false);
+
+	// Apply theme on initialization and changes
+	$effect(() => {
+		applyTheme(theme);
+	});
+
+	// Listen for system theme changes when using 'system' mode
+	if (browser) {
+		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+		mediaQuery.addEventListener('change', () => {
+			if (theme === 'system') {
+				applyTheme('system');
+			}
+		});
+	}
 
 	const currentRepo = $derived(repos.find((r) => r.id === currentRepoId) ?? null);
 	const validRepos = $derived(repos.filter((r) => r.isValid));
