@@ -45,7 +45,7 @@ export async function validateBeadsRepo(repoPath: string): Promise<ValidationRes
 
 	// Validate and normalize prefix field
 	// Beads uses 'issue-prefix' in YAML, but we normalize to 'prefix'
-	const rawConfig = config as Record<string, unknown>;
+	const rawConfig = config as unknown as Record<string, unknown>;
 	const prefix = rawConfig['issue-prefix'] || rawConfig.prefix || rawConfig.issuePrefix;
 
 	// If no prefix specified, derive from directory name

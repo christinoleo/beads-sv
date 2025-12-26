@@ -16,7 +16,7 @@
 	}
 
 	function handleAddRepo() {
-		goto('/repos/add');
+		goto('/repos?add=true');
 	}
 
 	function getRepoColor(color?: string): string {

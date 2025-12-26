@@ -9,14 +9,25 @@
 	import type { ManagedRepo } from '$lib/types/beads';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { getAppState } from '$lib/state/app.svelte';
 
 	let { data }: { data: PageData } = $props();
 
+	const appState = getAppState();
+
 	let repos = $state<ManagedRepo[]>(data.repos);
 	let searchQuery = $state('');
-	let addDialogOpen = $state(false);
+	let addDialogOpen = $state($page.url.searchParams.get('add') === 'true');
 	let importDialogOpen = $state(false);
 	let isRemoving = $state<string | null>(null);
+
+	// Clear URL param when dialog closes
+	$effect(() => {
+		if (!addDialogOpen && $page.url.searchParams.get('add') === 'true') {
+			goto('/repos', { replaceState: true });
+		}
+	});
 
 	let filteredRepos = $derived.by(() => {
 		if (!searchQuery.trim()) return repos;
@@ -39,10 +50,12 @@
 
 	function handleRepoAdded(repo: ManagedRepo) {
 		repos = [...repos, repo];
+		appState.addRepo(repo);
 	}
 
 	function handleReposImported(imported: ManagedRepo[]) {
 		repos = [...repos, ...imported];
+		imported.forEach(repo => appState.addRepo(repo));
 	}
 
 	async function handleRemoveRepo(repo: ManagedRepo) {
@@ -59,6 +72,7 @@
 
 			if (response.ok) {
 				repos = repos.filter((r) => r.id !== repo.id);
+				appState.removeRepo(repo.id);
 			} else {
 				const error = await response.json();
 				alert(error.message || 'Failed to remove repository');

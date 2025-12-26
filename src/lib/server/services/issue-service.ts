@@ -39,19 +39,15 @@ function mapJsonlToIssue(jsonl: JsonlIssue, repoPath: string): Issue {
 	// Map priority (ensure 0-4 range)
 	const priority = Math.max(0, Math.min(4, jsonl.priority)) as Priority;
 
-	// Extract blockedBy from dependencies
-	const blockedBy = (jsonl.dependencies || [])
+	// Process dependencies once
+	const deps = jsonl.dependencies ?? [];
+	const blockedBy = deps
 		.filter(d => d.issue_id === jsonl.id && d.type === 'blocks')
 		.map(d => d.depends_on_id);
-
-	// Extract blocks (where this issue blocks others)
-	const blocks = (jsonl.dependencies || [])
+	const blocks = deps
 		.filter(d => d.depends_on_id === jsonl.id && d.type === 'blocks')
 		.map(d => d.issue_id);
-
-	// Extract parent from parent-child dependency
-	const parentDep = (jsonl.dependencies || [])
-		.find(d => d.issue_id === jsonl.id && d.type === 'parent-child');
+	const parentDep = deps.find(d => d.issue_id === jsonl.id && d.type === 'parent-child');
 
 	return {
 		id: jsonl.id,
@@ -83,12 +79,15 @@ async function loadIssuesFromJsonl(repoPath: string): Promise<Issue[]> {
 			try {
 				const jsonlIssue = JSON.parse(line) as JsonlIssue;
 				issues.push(mapJsonlToIssue(jsonlIssue, repoPath));
-			} catch {
-				// Skip unparseable lines
+			} catch (e) {
+				console.warn(`Skipping unparseable JSONL line in ${jsonlPath}:`, e);
 			}
 		}
-	} catch {
-		// JSONL file doesn't exist
+	} catch (e) {
+		// Only silence ENOENT (file not found), log other errors
+		if ((e as NodeJS.ErrnoException).code !== 'ENOENT') {
+			console.error(`Error reading JSONL file ${jsonlPath}:`, e);
+		}
 	}
 
 	return issues;
@@ -278,4 +277,36 @@ export async function updateIssue(repoId: string, issueId: string, dto: UpdateIs
 export async function deleteIssue(repoId: string, issueId: string): Promise<void> {
 	const issue = await getIssue(repoId, issueId);
 	await fs.unlink(issue.filePath);
+}
+
+// Enrich a repo with issue counts
+export async function enrichRepoWithCounts<T extends { id: string }>(repo: T): Promise<T & { issueCount: number; openCount: number }> {
+	try {
+		// Load all issues to get accurate counts (no pagination limit)
+		const repoData = await appConfig.getRepo(repo.id);
+		if (!repoData) {
+			return { ...repo, issueCount: 0, openCount: 0 };
+		}
+
+		const issues = await loadIssuesFromJsonl(repoData.path);
+		const openCount = issues.filter(i => i.status !== 'closed').length;
+
+		return {
+			...repo,
+			issueCount: issues.length,
+			openCount
+		};
+	} catch (e) {
+		console.error(`Failed to enrich repo ${repo.id}:`, e);
+		return {
+			...repo,
+			issueCount: 0,
+			openCount: 0
+		};
+	}
+}
+
+// Enrich multiple repos in parallel
+export async function enrichReposWithCounts<T extends { id: string }>(repos: T[]): Promise<(T & { issueCount: number; openCount: number })[]> {
+	return Promise.all(repos.map(enrichRepoWithCounts));
 }

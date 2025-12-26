@@ -2,12 +2,14 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { appConfig } from '$lib/server/services/app-config';
 import { validateBeadsRepo } from '$lib/server/services/repo-validator';
+import { enrichRepoWithCounts, enrichReposWithCounts } from '$lib/server/services/issue-service';
 import type { AddRepoDto } from '$lib/types/beads';
 
 // GET /api/repos - List all managed repos
 export const GET: RequestHandler = async () => {
 	const repos = await appConfig.getRepos();
-	return json({ success: true, data: repos });
+	const enrichedRepos = await enrichReposWithCounts(repos);
+	return json({ success: true, data: enrichedRepos });
 };
 
 // POST /api/repos - Add a new repo
@@ -29,7 +31,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			...dto,
 			config: validation.config!
 		});
-		return json({ success: true, data: repo }, { status: 201 });
+		const enrichedRepo = await enrichRepoWithCounts(repo);
+		return json({ success: true, data: enrichedRepo }, { status: 201 });
 	} catch (e) {
 		if ((e as Error).message === 'Repository already managed') {
 			throw error(409, { message: 'Repository already managed' });
