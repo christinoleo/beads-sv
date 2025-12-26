@@ -80,24 +80,52 @@ function handleFileChange(type: FileChangeEvent['type'], repoId: string, filePat
 /**
  * Start watching a specific repository's issues directory
  */
-export function watchRepo(repoId: string, repoPath: string): FSWatcher {
+export function watchRepo(repoId: string, repoPath: string): FSWatcher | null {
 	// Stop existing watcher if any
 	stopWatchingRepo(repoId);
 
-	const issuesDir = path.join(repoPath, '.beads', 'issues');
-	const globPattern = path.join(issuesDir, '*.md');
+	const beadsDir = path.join(repoPath, '.beads');
+	const issuesDir = path.join(beadsDir, 'issues');
+	const jsonlPath = path.join(beadsDir, 'issues.jsonl');
 
-	console.log(`[FileWatcher] Starting watcher for repo ${repoId}: ${globPattern}`);
+	// Determine what to watch - prefer JSONL, fall back to issues directory
+	const watchTargets: string[] = [];
 
-	const watcher = chokidar.watch(globPattern, {
+	// Always try to watch the JSONL file (modern beads format)
+	watchTargets.push(jsonlPath);
+
+	// Also watch the issues directory if it exists (legacy markdown format)
+	try {
+		const issuesDirStat = require('fs').statSync(issuesDir);
+		if (issuesDirStat.isDirectory()) {
+			watchTargets.push(path.join(issuesDir, '*.md'));
+		}
+	} catch {
+		// Issues directory doesn't exist, that's fine - will use JSONL
+	}
+
+	if (watchTargets.length === 0) {
+		console.log(`[FileWatcher] No watch targets found for repo ${repoId}`);
+		return null;
+	}
+
+	console.log(`[FileWatcher] Starting watcher for repo ${repoId}: ${watchTargets.join(', ')}`);
+
+	const watcher = chokidar.watch(watchTargets, {
 		persistent: true,
 		ignoreInitial: true,
 		awaitWriteFinish: {
 			stabilityThreshold: 100,
 			pollInterval: 50
 		},
-		// Ignore dot files and temp files
-		ignored: /(^|[\/\\])\../
+		// Ignore dot files and temp files (but not issues.jsonl)
+		ignored: (filePath: string) => {
+			const basename = path.basename(filePath);
+			// Don't ignore issues.jsonl
+			if (basename === 'issues.jsonl') return false;
+			// Ignore other dotfiles
+			return /(^|[\/\\])\./.test(filePath) && !filePath.includes('.beads');
+		}
 	});
 
 	watcher.on('add', (filePath: string) => {

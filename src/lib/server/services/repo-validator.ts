@@ -29,18 +29,31 @@ export async function validateBeadsRepo(repoPath: string): Promise<ValidationRes
 
 	try {
 		const yamlContent = await fs.readFile(yamlPath, 'utf-8');
-		config = yaml.load(yamlContent) as BeadsConfig;
+		const parsed = yaml.load(yamlContent);
+		// yaml.load returns null for files with only comments
+		if (parsed && typeof parsed === 'object') {
+			config = parsed as BeadsConfig;
+		}
 	} catch {
-		// Try JSON fallback
+		// YAML file doesn't exist or failed to parse, try JSON
+	}
+
+	// If no valid config from YAML, try JSON fallback
+	if (!config) {
 		try {
 			const jsonContent = await fs.readFile(jsonPath, 'utf-8');
 			config = JSON.parse(jsonContent) as BeadsConfig;
 		} catch (e) {
-			if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
-				return { isValid: false, error: '.beads/config.yaml or config.json not found' };
+			// If JSON also doesn't exist, that's okay - beads can work with defaults
+			if ((e as NodeJS.ErrnoException).code !== 'ENOENT') {
+				return { isValid: false, error: `Cannot read config: ${(e as Error).message}` };
 			}
-			return { isValid: false, error: `Cannot read config: ${(e as Error).message}` };
 		}
+	}
+
+	// If still no config, create a minimal valid config (beads works without explicit config)
+	if (!config) {
+		config = {} as BeadsConfig;
 	}
 
 	// Validate and normalize prefix field
