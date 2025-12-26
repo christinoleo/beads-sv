@@ -53,7 +53,7 @@
 
 	<!-- Collapsible Column Content -->
 	{#if !isCollapsed}
-		<div class="grid grid-cols-4 gap-3 p-3">
+		<div class="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 lg:grid-cols-4">
 			{#each columns as column (column.key)}
 				{@const issues = swimlane.columns[column.key]}
 				<div class="flex min-h-[120px] flex-col rounded-lg bg-muted/30">

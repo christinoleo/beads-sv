@@ -8,15 +8,27 @@
 	import { getAppState } from '$lib/state/app.svelte';
 	import { cn } from '$lib/utils';
 
+	interface Props {
+		mobile?: boolean;
+		onNavigate?: () => void;
+	}
+
+	let { mobile = false, onNavigate }: Props = $props();
+
 	const appState = getAppState();
+
+	// In mobile mode, always show expanded view (never collapsed)
+	const isCollapsed = $derived(mobile ? false : appState.sidebarCollapsed);
 
 	function handleRepoClick(repoId: string) {
 		appState.setCurrentRepo(repoId);
 		goto(`/repos/${repoId}`);
+		onNavigate?.();
 	}
 
 	function handleAddRepo() {
 		goto('/repos?add=true');
+		onNavigate?.();
 	}
 
 	function getRepoColor(color?: string): string {
@@ -26,32 +38,34 @@
 
 <aside
 	class={cn(
-		'flex h-full flex-col border-r bg-muted/30 transition-all duration-300',
-		appState.sidebarCollapsed ? 'w-16' : 'w-64'
+		'flex h-full flex-col bg-muted/30',
+		mobile ? 'w-64 border-r-0' : cn('border-r transition-all duration-300', isCollapsed ? 'w-16' : 'w-64')
 	)}
 >
 	<!-- Header -->
 	<div class="flex h-14 items-center justify-between border-b px-3">
-		{#if !appState.sidebarCollapsed}
-			<a href="/" class="flex items-center gap-2 font-semibold">
+		{#if !isCollapsed}
+			<a href="/" class="flex items-center gap-2 font-semibold" onclick={() => onNavigate?.()}>
 				<Icon icon="mdi:folder-multiple" class="h-5 w-5 text-primary" />
 				<span>Beads</span>
 			</a>
 		{/if}
-		<Button
-			variant="ghost"
-			size="icon"
-			onclick={() => appState.toggleSidebar()}
-			class={cn(appState.sidebarCollapsed && 'mx-auto')}
-		>
-			<Icon icon={appState.sidebarCollapsed ? 'mdi:menu' : 'mdi:chevron-left'} class="h-5 w-5" />
-			<span class="sr-only">Toggle sidebar</span>
-		</Button>
+		{#if !mobile}
+			<Button
+				variant="ghost"
+				size="icon"
+				onclick={() => appState.toggleSidebar()}
+				class={cn(isCollapsed && 'mx-auto')}
+			>
+				<Icon icon={isCollapsed ? 'mdi:menu' : 'mdi:chevron-left'} class="h-5 w-5" />
+				<span class="sr-only">Toggle sidebar</span>
+			</Button>
+		{/if}
 	</div>
 
 	<!-- Repos List -->
 	<div class="flex-1 overflow-y-auto py-2">
-		{#if !appState.sidebarCollapsed}
+		{#if !isCollapsed}
 			<div class="px-3 py-2">
 				<h2 class="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
 					Repositories
@@ -62,7 +76,7 @@
 		<nav class="space-y-1 px-2">
 			{#each appState.repos as repo (repo.id)}
 				{@const isActive = $page.params.repoId === repo.id}
-				{#if appState.sidebarCollapsed}
+				{#if isCollapsed}
 					<Tooltip.Root>
 						<Tooltip.Trigger>
 							<Button
@@ -106,7 +120,7 @@
 					</Button>
 				{/if}
 			{:else}
-				{#if !appState.sidebarCollapsed}
+				{#if !isCollapsed}
 					<div class="px-3 py-4 text-center text-sm text-muted-foreground">No repositories yet</div>
 				{/if}
 			{/each}
@@ -115,7 +129,7 @@
 
 	<!-- Footer -->
 	<div class="border-t p-2">
-		{#if appState.sidebarCollapsed}
+		{#if isCollapsed}
 			<Tooltip.Root>
 				<Tooltip.Trigger>
 					<Button variant="outline" size="icon" class="w-full" onclick={handleAddRepo}>

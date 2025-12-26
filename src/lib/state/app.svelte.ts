@@ -11,6 +11,7 @@ export interface AppState {
 	repos: ManagedRepo[];
 	currentRepoId: string | null;
 	sidebarCollapsed: boolean;
+	mobileMenuOpen: boolean;
 	theme: Theme;
 	searchOpen: boolean;
 }
@@ -40,6 +41,7 @@ export function createAppState(initialRepos: ManagedRepo[] = []) {
 	let repos = $state<ManagedRepo[]>(initialRepos);
 	let currentRepoId = $state<string | null>(null);
 	let sidebarCollapsed = $state(false);
+	let mobileMenuOpen = $state(false);
 	let theme = $state<Theme>(getInitialTheme());
 	let searchOpen = $state(false);
 
@@ -106,6 +108,18 @@ export function createAppState(initialRepos: ManagedRepo[] = []) {
 		searchOpen = open;
 	}
 
+	function toggleMobileMenu() {
+		mobileMenuOpen = !mobileMenuOpen;
+	}
+
+	function closeMobileMenu() {
+		mobileMenuOpen = false;
+	}
+
+	function setMobileMenuOpen(open: boolean) {
+		mobileMenuOpen = open;
+	}
+
 	return {
 		// Reactive getters
 		get repos() {
@@ -119,6 +133,9 @@ export function createAppState(initialRepos: ManagedRepo[] = []) {
 		},
 		get sidebarCollapsed() {
 			return sidebarCollapsed;
+		},
+		get mobileMenuOpen() {
+			return mobileMenuOpen;
 		},
 		get theme() {
 			return theme;
@@ -146,7 +163,10 @@ export function createAppState(initialRepos: ManagedRepo[] = []) {
 		setSidebarCollapsed,
 		setTheme,
 		toggleSearch,
-		setSearchOpen
+		setSearchOpen,
+		toggleMobileMenu,
+		closeMobileMenu,
+		setMobileMenuOpen
 	};
 }
 

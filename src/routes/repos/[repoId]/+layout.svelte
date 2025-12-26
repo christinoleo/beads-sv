@@ -39,25 +39,28 @@
 	<header
 		class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
 	>
-		<div class="container flex h-14 items-center justify-between px-4">
-			<div class="flex items-center gap-4">
+		<div class="container flex h-14 items-center justify-between gap-2 px-4">
+			<div class="flex min-w-0 items-center gap-2 sm:gap-4">
 				<!-- Back to repos -->
-				<Button variant="ghost" size="icon" href="/" class="h-8 w-8">
+				<Button variant="ghost" size="icon" href="/" class="h-8 w-8 shrink-0">
 					<Icon icon="mdi:arrow-left" class="h-4 w-4" />
 				</Button>
 
 				<!-- Repo info -->
-				<div class="flex items-center gap-2">
+				<div class="flex min-w-0 items-center gap-2">
 					{#if repo.color}
-						<div class="h-3 w-3 rounded-full" style="background-color: {repo.color}"></div>
+						<div class="h-3 w-3 shrink-0 rounded-full" style="background-color: {repo.color}"></div>
 					{/if}
-					<h1 class="text-lg font-semibold">{repo.name}</h1>
-					<span class="font-mono text-sm text-muted-foreground">({repo.config.prefix})</span>
+					<h1 class="truncate text-lg font-semibold">{repo.name}</h1>
+					<span class="hidden font-mono text-sm text-muted-foreground sm:inline">({repo.config.prefix})</span>
 				</div>
 			</div>
 
-			<div class="flex items-center gap-2">
-				<Button variant="outline" size="sm" class="gap-2">
+			<div class="flex shrink-0 items-center gap-2">
+				<Button variant="outline" size="icon" class="h-8 w-8 sm:hidden">
+					<Icon icon="mdi:plus" class="h-4 w-4" />
+				</Button>
+				<Button variant="outline" size="sm" class="hidden gap-2 sm:inline-flex">
 					<Icon icon="mdi:plus" class="h-4 w-4" />
 					New Issue
 				</Button>
@@ -70,21 +73,21 @@
 
 	<!-- Navigation Tabs -->
 	<div class="border-b">
-		<div class="container px-4">
+		<div class="container overflow-x-auto px-4">
 			<Tabs.Root value={activeTab} onValueChange={handleTabChange}>
 				<Tabs.List
-					class="h-12 w-auto justify-start gap-4 rounded-none border-b-0 bg-transparent p-0"
+					class="h-12 w-auto min-w-max justify-start gap-4 rounded-none border-b-0 bg-transparent p-0"
 				>
 					<Tabs.Trigger
 						value="epics"
-						class="relative h-12 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+						class="relative h-12 cursor-pointer rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
 					>
 						<Icon icon="mdi:view-dashboard-outline" class="mr-2 h-4 w-4" />
 						Dashboard
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="issues"
-						class="relative h-12 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+						class="relative h-12 cursor-pointer rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
 					>
 						<Icon icon="mdi:format-list-bulleted" class="mr-2 h-4 w-4" />
 						Issues
@@ -96,7 +99,7 @@
 					</Tabs.Trigger>
 					<Tabs.Trigger
 						value="board"
-						class="relative h-12 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+						class="relative h-12 cursor-pointer rounded-none border-b-2 border-b-transparent bg-transparent px-4 pt-2 pb-3 font-medium text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
 					>
 						<Icon icon="mdi:view-column-outline" class="mr-2 h-4 w-4" />
 						Board
@@ -107,7 +110,7 @@
 	</div>
 
 	<!-- Main Content -->
-	<main class="container flex-1 px-4 py-6">
+	<main class="container flex-1 px-4 py-4 sm:py-6">
 		{@render children()}
 	</main>
 </div>

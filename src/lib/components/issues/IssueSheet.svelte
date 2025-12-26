@@ -278,7 +278,7 @@
 				{/if}
 
 				<!-- Status & Priority Row -->
-				<div class="grid grid-cols-2 gap-3">
+				<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 					<!-- Status Dropdown -->
 					<div class="space-y-1.5">
 						<span class="text-xs font-medium tracking-wide text-muted-foreground uppercase"

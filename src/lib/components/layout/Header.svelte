@@ -92,6 +92,17 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <header class="flex h-14 items-center gap-4 border-b bg-background px-4">
+	<!-- Mobile menu button -->
+	<Button
+		variant="ghost"
+		size="icon"
+		class="md:hidden"
+		onclick={() => appState.toggleMobileMenu()}
+	>
+		<Icon icon="mdi:menu" class="h-5 w-5" />
+		<span class="sr-only">Open menu</span>
+	</Button>
+
 	<!-- Breadcrumbs -->
 	<nav class="flex items-center gap-1 text-sm">
 		{#each breadcrumbs as crumb, index (crumb.href)}

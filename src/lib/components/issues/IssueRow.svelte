@@ -68,8 +68,8 @@
 		</div>
 	</Table.Cell>
 
-	<!-- Type Column -->
-	<Table.Cell>
+	<!-- Type Column (hidden below sm) -->
+	<Table.Cell class="hidden sm:table-cell">
 		<div class="flex items-center gap-2">
 			<TypeIcon type={issue.type} size={18} />
 			<span class="text-sm text-muted-foreground capitalize">{issue.type}</span>
@@ -81,13 +81,13 @@
 		<StatusBadge status={issue.status} />
 	</Table.Cell>
 
-	<!-- Priority Column -->
-	<Table.Cell>
+	<!-- Priority Column (hidden below md) -->
+	<Table.Cell class="hidden md:table-cell">
 		<PriorityBadge priority={formatPriority(issue.priority)} />
 	</Table.Cell>
 
-	<!-- Created Column -->
-	<Table.Cell class="text-sm text-muted-foreground">
+	<!-- Created Column (hidden below lg) -->
+	<Table.Cell class="hidden text-sm text-muted-foreground lg:table-cell">
 		{formatDate(issue.created)}
 	</Table.Cell>
 </Table.Row>
