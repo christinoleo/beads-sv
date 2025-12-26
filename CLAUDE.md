@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**IMPORTANT:** Always read `AGENTS.md` at the start of a session and follow the "Landing the Plane" workflow for all completions.
+
 ## Project Overview
 
 beads-sv is a multi-repository issue tracking UI for the [Beads](https://github.com/steveyegge/beads) issue tracking system. Built with SvelteKit 5 and Svelte 5, it provides a unified dashboard to manage issues across multiple git repositories from a single local web instance.
