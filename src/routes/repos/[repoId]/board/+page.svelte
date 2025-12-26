@@ -1,5 +1,5 @@
 <script lang="ts">
-	import BoardColumn from '$lib/components/board/BoardColumn.svelte';
+	import BoardSwimlane from '$lib/components/board/BoardSwimlane.svelte';
 	import IssueSheet from '$lib/components/issues/IssueSheet.svelte';
 	import { invalidate } from '$app/navigation';
 	import type { PageData } from './$types';
@@ -10,31 +10,6 @@
 	// Sheet state
 	let selectedIssue = $state<Issue | null>(null);
 	let sheetOpen = $state(false);
-
-	// Categorize issues into columns
-	const blockedIssues = $derived(
-		data.issues.items.filter(
-			(issue) =>
-				issue.status !== 'closed' &&
-				issue.blockedBy.length > 0
-		)
-	);
-
-	const readyIssues = $derived(
-		data.issues.items.filter(
-			(issue) =>
-				issue.status === 'open' &&
-				issue.blockedBy.length === 0
-		)
-	);
-
-	const inProgressIssues = $derived(
-		data.issues.items.filter((issue) => issue.status === 'in_progress')
-	);
-
-	const closedIssues = $derived(
-		data.issues.items.filter((issue) => issue.status === 'closed')
-	);
 
 	function handleIssueClick(issue: Issue) {
 		selectedIssue = issue;
@@ -64,43 +39,22 @@
 	<div class="mb-6">
 		<h2 class="text-2xl font-bold tracking-tight">Board</h2>
 		<p class="text-muted-foreground">
-			{data.issues.total} issues across all columns
+			{data.issues.total} issues across {data.swimlanes.length}
+			{data.swimlanes.length === 1 ? 'group' : 'groups'}
 		</p>
 	</div>
 
-	<!-- Kanban Board -->
-	<div class="grid min-h-0 flex-1 gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
-		<!-- Blocked Column -->
-		<BoardColumn
-			title="Blocked"
-			type="blocked"
-			issues={blockedIssues}
-			onIssueClick={handleIssueClick}
-		/>
-
-		<!-- Ready Column -->
-		<BoardColumn
-			title="Ready"
-			type="ready"
-			issues={readyIssues}
-			onIssueClick={handleIssueClick}
-		/>
-
-		<!-- In Progress Column -->
-		<BoardColumn
-			title="In Progress"
-			type="in-progress"
-			issues={inProgressIssues}
-			onIssueClick={handleIssueClick}
-		/>
-
-		<!-- Closed Column -->
-		<BoardColumn
-			title="Closed"
-			type="closed"
-			issues={closedIssues}
-			onIssueClick={handleIssueClick}
-		/>
+	<!-- Swimlane Board -->
+	<div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+		{#if data.swimlanes.length === 0}
+			<div class="flex h-64 items-center justify-center rounded-lg border border-dashed">
+				<p class="text-muted-foreground">No issues found</p>
+			</div>
+		{:else}
+			{#each data.swimlanes as swimlane (swimlane.epic?.id ?? 'no-epic')}
+				<BoardSwimlane {swimlane} onIssueClick={handleIssueClick} />
+			{/each}
+		{/if}
 	</div>
 </div>
 

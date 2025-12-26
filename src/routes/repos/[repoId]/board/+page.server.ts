@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { listIssues } from '$lib/server/services/issue-service';
+import { buildSwimlanesFromIssues } from '$lib/utils/group-by-epic';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	// Get repo from parent layout
@@ -15,8 +16,12 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 			pageSize: 1000 // Large limit to get all issues for board
 		});
 
+		// Build swimlane data grouped by epic
+		const swimlanes = buildSwimlanesFromIssues(issues.items);
+
 		return {
 			issues,
+			swimlanes,
 			repoId: params.repoId,
 			repo
 		};

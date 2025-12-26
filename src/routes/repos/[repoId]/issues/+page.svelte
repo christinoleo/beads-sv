@@ -1,11 +1,12 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import IssueTable from '$lib/components/issues/IssueTable.svelte';
+	import IssueGroup from '$lib/components/issues/IssueGroup.svelte';
 	import IssueFilters from '$lib/components/issues/IssueFilters.svelte';
 	import IssueSheet from '$lib/components/issues/IssueSheet.svelte';
 	import IssueForm from '$lib/components/issues/IssueForm.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { issuesState } from '$lib/state/issues.svelte';
+	import { groupIssuesByEpic, getEpics } from '$lib/utils/group-by-epic';
 	import type { PageData } from './$types';
 	import type { Issue, IssueSort } from '$lib/types/beads';
 
@@ -20,6 +21,12 @@
 	// Initialize state with server data
 	$effect(() => {
 		issuesState.initialize(data.issues, data.repoId);
+	});
+
+	// Group issues by epic
+	const epicGroups = $derived.by(() => {
+		const epics = getEpics(issuesState.issues);
+		return groupIssuesByEpic(issuesState.issues, epics);
 	});
 
 	// Refetch when filters/sort change
@@ -105,7 +112,7 @@
 			</p>
 		</div>
 		<Button onclick={handleNewIssue}>
-			<Icon icon="mdi:plus" class="h-4 w-4 mr-2" />
+			<Icon icon="mdi:plus" class="mr-2 h-4 w-4" />
 			New Issue
 		</Button>
 	</div>
@@ -126,24 +133,42 @@
 
 	<!-- Error State -->
 	{#if issuesState.error}
-		<div class="bg-destructive/10 text-destructive rounded-md border border-destructive/20 p-4">
+		<div class="rounded-md border border-destructive/20 bg-destructive/10 p-4 text-destructive">
 			<p class="font-medium">Error loading issues</p>
 			<p class="text-sm">{issuesState.error}</p>
 		</div>
 	{/if}
 
-	<!-- Issues Table -->
-	<IssueTable
-		issues={issuesState.issues}
-		sort={issuesState.sort}
-		loading={issuesState.loading}
-		onSort={handleSort}
-		onIssueClick={handleIssueClick}
-	/>
+	<!-- Loading State -->
+	{#if issuesState.loading}
+		<div class="flex h-64 items-center justify-center rounded-lg border border-dashed">
+			<div class="flex items-center gap-2">
+				<Icon icon="mdi:loading" class="h-5 w-5 animate-spin" />
+				<span class="text-muted-foreground">Loading issues...</span>
+			</div>
+		</div>
+	{:else if epicGroups.length === 0}
+		<div class="flex h-64 flex-col items-center justify-center rounded-lg border border-dashed">
+			<Icon icon="mdi:folder-open-outline" class="mb-2 h-10 w-10 text-muted-foreground" />
+			<p class="text-muted-foreground">No issues found</p>
+		</div>
+	{:else}
+		<!-- Issue Groups -->
+		<div class="space-y-4">
+			{#each epicGroups as group (group.epic?.id ?? 'no-epic')}
+				<IssueGroup
+					{group}
+					sort={issuesState.sort}
+					onSort={handleSort}
+					onIssueClick={handleIssueClick}
+				/>
+			{/each}
+		</div>
+	{/if}
 
 	<!-- Pagination Info -->
 	{#if issuesState.total > 0}
-		<div class="text-muted-foreground flex items-center justify-between text-sm">
+		<div class="flex items-center justify-between text-sm text-muted-foreground">
 			<span>
 				Page {issuesState.page} of {Math.ceil(issuesState.total / issuesState.pageSize)}
 			</span>
