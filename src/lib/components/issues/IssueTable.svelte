@@ -20,29 +20,16 @@
 		label: string;
 		sortable: boolean;
 		sortKey?: IssueSort['field'];
-		hideBelow?: 'sm' | 'md' | 'lg';
 	};
 
 	const columns: SortableColumn[] = [
 		{ key: 'id', label: 'ID', sortable: false },
 		{ key: 'title', label: 'Title', sortable: true, sortKey: 'title' },
-		{ key: 'type', label: 'Type', sortable: false, hideBelow: 'sm' },
+		{ key: 'type', label: 'Type', sortable: false },
 		{ key: 'status', label: 'Status', sortable: true, sortKey: 'status' },
-		{ key: 'priority', label: 'Priority', sortable: true, sortKey: 'priority', hideBelow: 'md' },
-		{ key: 'created', label: 'Created', sortable: true, sortKey: 'created', hideBelow: 'lg' }
+		{ key: 'priority', label: 'Priority', sortable: true, sortKey: 'priority' },
+		{ key: 'created', label: 'Created', sortable: true, sortKey: 'created' }
 	];
-
-	function getHiddenClass(hideBelow?: 'sm' | 'md' | 'lg'): string {
-		if (!hideBelow) return '';
-		switch (hideBelow) {
-			case 'sm':
-				return 'hidden sm:table-cell';
-			case 'md':
-				return 'hidden md:table-cell';
-			case 'lg':
-				return 'hidden lg:table-cell';
-		}
-	}
 
 	function getSortIcon(column: SortableColumn): string {
 		if (!column.sortable || !column.sortKey) return '';
@@ -64,15 +51,14 @@
 	}
 </script>
 
-<div class="rounded-md border">
+<div class="overflow-x-auto rounded-md border">
 	<Table.Root>
 		<Table.Header>
 			<Table.Row>
 				{#each columns as column (column.key)}
 					<Table.Head
 						class={cn(
-							column.sortable && 'cursor-pointer transition-colors select-none hover:bg-muted/50',
-							getHiddenClass(column.hideBelow)
+							column.sortable && 'cursor-pointer transition-colors select-none hover:bg-muted/50'
 						)}
 						onclick={() => handleHeaderClick(column)}
 						onkeydown={(e) => handleHeaderKeydown(e, column)}

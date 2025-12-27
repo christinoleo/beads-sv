@@ -34,7 +34,7 @@
 	}
 </script>
 
-<div class="flex min-h-screen flex-col">
+<div class="flex h-full flex-col">
 	<!-- Header -->
 	<header
 		class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
@@ -110,7 +110,7 @@
 	</div>
 
 	<!-- Main Content -->
-	<main class="container flex-1 px-4 py-4 sm:py-6">
+	<main class="container min-h-0 flex-1 overflow-auto px-4 py-4 sm:py-6">
 		{@render children()}
 	</main>
 </div>
