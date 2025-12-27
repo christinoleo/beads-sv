@@ -72,6 +72,7 @@ function mapJsonlToIssue(jsonl: JsonlIssue, repoPath: string): Issue {
 		created: jsonl.created_at.split('T')[0],
 		updated: jsonl.updated_at?.split('T')[0],
 		closed: jsonl.closed_at?.split('T')[0],
+		closeReason: jsonl.close_reason,
 		description: jsonl.description || '',
 		labels: jsonl.labels || [],
 		blockedBy,

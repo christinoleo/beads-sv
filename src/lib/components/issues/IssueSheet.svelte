@@ -10,6 +10,7 @@
 	import StatusBadge from '$lib/components/shared/StatusBadge.svelte';
 	import PriorityBadge from '$lib/components/shared/PriorityBadge.svelte';
 	import TypeIcon from '$lib/components/shared/TypeIcon.svelte';
+	import CloseIssueDialog from '$lib/components/issues/CloseIssueDialog.svelte';
 	import type { Issue, IssueStatus, IssueType, Priority } from '$lib/types/beads';
 
 	interface Props {
@@ -26,6 +27,7 @@
 	let isUpdating = $state(false);
 	let updateError = $state<string | null>(null);
 	let saveStatus = $state<'idle' | 'saving' | 'saved'>('idle');
+	let closeDialogOpen = $state(false);
 
 	// Local editable values
 	let editTitle = $state('');
@@ -170,7 +172,20 @@
 	}
 
 	function handleStatusChange(status: IssueStatus) {
-		saveUpdates({ status });
+		if (status === 'closed' && displayIssue?.status !== 'closed') {
+			// Show close dialog instead of immediately closing
+			closeDialogOpen = true;
+		} else {
+			saveUpdates({ status });
+		}
+	}
+
+	async function handleCloseConfirm(closeReason: string) {
+		await saveUpdates({ status: 'closed', closeReason: closeReason || undefined });
+		// Only close dialog if save succeeded (no error)
+		if (!updateError) {
+			closeDialogOpen = false;
+		}
 	}
 
 	function handlePriorityChange(priority: Priority) {
@@ -451,6 +466,12 @@
 								>{formatRelativeDate(displayIssue.closed)}</span
 							>
 						</div>
+						{#if displayIssue.closeReason}
+							<div class="space-y-1">
+								<span class="text-muted-foreground">Close Reason</span>
+								<p class="text-sm text-foreground">{displayIssue.closeReason}</p>
+							</div>
+						{/if}
 					{/if}
 					{#if displayIssue.parentId}
 						<div class="flex items-center justify-between">
@@ -467,3 +488,10 @@
 		{/if}
 	</Sheet.Content>
 </Sheet.Root>
+
+<CloseIssueDialog
+	bind:open={closeDialogOpen}
+	issueId={displayIssue?.id}
+	issueTitle={displayIssue?.title}
+	onConfirm={handleCloseConfirm}
+/>

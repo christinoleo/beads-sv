@@ -13,6 +13,7 @@ export interface Issue {
 	created: string; // ISO date
 	updated?: string; // ISO date
 	closed?: string; // ISO date
+	closeReason?: string; // Reason for closing
 	description: string;
 	acceptanceCriteria?: string;
 	labels: string[];
@@ -144,6 +145,7 @@ export interface UpdateIssueDto {
 	description?: string;
 	acceptanceCriteria?: string;
 	labels?: string[];
+	closeReason?: string;
 }
 
 export interface AddRepoDto {

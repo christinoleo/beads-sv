@@ -4,6 +4,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Separator } from '$lib/components/ui/separator';
 	import StatusBadge from '$lib/components/shared/StatusBadge.svelte';
@@ -38,6 +39,7 @@
 	let description = $state('');
 	let labelsInput = $state('');
 	let labels = $state<string[]>([]);
+	let closeReason = $state('');
 
 	let isSubmitting = $state(false);
 	let submitError = $state<string | null>(null);
@@ -80,6 +82,7 @@
 				description = issue.description;
 				labels = [...issue.labels];
 				labelsInput = '';
+				closeReason = issue.closeReason || '';
 			} else {
 				resetForm();
 			}
@@ -94,6 +97,7 @@
 		description = '';
 		labels = [];
 		labelsInput = '';
+		closeReason = '';
 		submitError = null;
 		validationErrors = {};
 	}
@@ -153,7 +157,8 @@
 					status,
 					priority,
 					description: description.trim(),
-					labels
+					labels,
+					closeReason: status === 'closed' ? closeReason.trim() || undefined : undefined
 				};
 
 				const response = await fetch(`/api/repos/${repoId}/issues/${issue.id}`, {
@@ -340,6 +345,23 @@
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
 				</div>
+
+				<!-- Close Reason (only when status is closed) -->
+				{#if status === 'closed'}
+					<div class="space-y-2">
+						<label for="issue-close-reason" class="text-sm font-medium">
+							Close Reason <span class="text-muted-foreground">(optional)</span>
+						</label>
+						<Textarea
+							id="issue-close-reason"
+							bind:value={closeReason}
+							placeholder="Describe why this issue was closed..."
+							rows={2}
+							disabled={isSubmitting}
+							class="min-h-[60px] resize-y"
+						/>
+					</div>
+				{/if}
 			{/if}
 
 			<Separator />

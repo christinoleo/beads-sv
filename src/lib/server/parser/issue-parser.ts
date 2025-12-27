@@ -7,6 +7,7 @@ const METADATA_PATTERNS = {
 	created: /^-\s*\*\*Created:\*\*\s*(.+)$/im,
 	updated: /^-\s*\*\*Updated:\*\*\s*(.+)$/im,
 	closed: /^-\s*\*\*Closed:\*\*\s*(.+)$/im,
+	closeReason: /^-\s*\*\*Close Reason:\*\*\s*(.+)$/im,
 	labels: /^-\s*\*\*Labels:\*\*\s*(.+)$/im,
 	parent: /^-\s*\*\*Parent:\*\*\s*(.+)$/im,
 	blockedBy: /^-\s*\*\*Blocked by:\*\*\s*(.+)$/im,
@@ -46,6 +47,7 @@ export function parseIssue(content: string, filePath: string): Issue {
 	);
 	const updated = extractMatch(content, METADATA_PATTERNS.updated, undefined);
 	const closed = extractMatch(content, METADATA_PATTERNS.closed, undefined);
+	const closeReason = extractMatch(content, METADATA_PATTERNS.closeReason, undefined);
 	const labelsStr = extractMatch(content, METADATA_PATTERNS.labels, '');
 	const parentId = extractMatch(content, METADATA_PATTERNS.parent, undefined);
 	const blockedByStr = extractMatch(content, METADATA_PATTERNS.blockedBy, '');
@@ -84,6 +86,7 @@ export function parseIssue(content: string, filePath: string): Issue {
 		created,
 		updated,
 		closed,
+		closeReason,
 		description,
 		acceptanceCriteria,
 		labels,
@@ -108,6 +111,7 @@ export function serializeIssue(issue: Issue): string {
 	lines.push(`- **Created:** ${issue.created}`);
 	if (issue.updated) lines.push(`- **Updated:** ${issue.updated}`);
 	if (issue.closed) lines.push(`- **Closed:** ${issue.closed}`);
+	if (issue.closeReason) lines.push(`- **Close Reason:** ${issue.closeReason}`);
 	if (issue.labels.length > 0) lines.push(`- **Labels:** ${issue.labels.join(', ')}`);
 	if (issue.parentId) lines.push(`- **Parent:** ${issue.parentId}`);
 	if (issue.blockedBy.length > 0) lines.push(`- **Blocked by:** ${issue.blockedBy.join(', ')}`);
