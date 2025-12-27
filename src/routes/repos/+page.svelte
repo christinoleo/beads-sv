@@ -88,9 +88,6 @@
 		}
 	}
 
-	function handleOpenRepo(repo: ManagedRepo) {
-		goto(`/repos/${repo.id}`);
-	}
 </script>
 
 <svelte:head>
@@ -100,14 +97,14 @@
 <div class="min-h-screen bg-background">
 	<div class="container mx-auto max-w-6xl px-4 py-8">
 		<!-- Header -->
-		<div class="mb-8 flex flex-col gap-6">
-			<div class="flex items-center justify-between">
+		<div class="mb-8 flex flex-col gap-4 sm:gap-6">
+			<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
-					<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
-						<Icon icon="mdi:source-repository-multiple" class="h-8 w-8" />
+					<h1 class="flex items-center gap-2 text-2xl font-bold tracking-tight sm:gap-3 sm:text-3xl">
+						<Icon icon="mdi:source-repository-multiple" class="h-6 w-6 sm:h-8 sm:w-8" />
 						Repositories
 					</h1>
-					<p class="mt-1 text-muted-foreground">Manage your beads repositories</p>
+					<p class="mt-1 text-sm text-muted-foreground sm:text-base">Manage your beads repositories</p>
 				</div>
 				<div class="flex gap-2">
 					<Button variant="outline" onclick={() => (importDialogOpen = true)}>
@@ -116,7 +113,8 @@
 					</Button>
 					<Button onclick={() => (addDialogOpen = true)}>
 						<Icon icon="mdi:plus" class="h-4 w-4" />
-						Add Repository
+						<span class="sm:hidden">Add</span>
+						<span class="hidden sm:inline">Add Repository</span>
 					</Button>
 				</div>
 			</div>
@@ -196,7 +194,7 @@
 						class:opacity-50={isRemoving === repo.id}
 						class:pointer-events-none={isRemoving === repo.id}
 					>
-						<RepoCard {repo} onRemove={handleRemoveRepo} onOpen={handleOpenRepo} />
+						<RepoCard {repo} href="/repos/{repo.id}" onRemove={handleRemoveRepo} />
 					</div>
 				{/each}
 			</div>

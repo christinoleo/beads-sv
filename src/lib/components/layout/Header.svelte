@@ -91,12 +91,12 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<header class="flex h-14 items-center gap-4 border-b bg-background px-4">
+<header class="flex h-12 items-center gap-2 border-b bg-background px-2 sm:h-14 sm:gap-4 sm:px-4">
 	<!-- Mobile menu button -->
 	<Button
 		variant="ghost"
 		size="icon"
-		class="md:hidden"
+		class="h-8 w-8 shrink-0 md:hidden"
 		onclick={() => appState.toggleMobileMenu()}
 	>
 		<Icon icon="mdi:menu" class="h-5 w-5" />
@@ -104,27 +104,36 @@
 	</Button>
 
 	<!-- Breadcrumbs -->
-	<nav class="flex items-center gap-1 text-sm">
+	<nav class="flex min-w-0 flex-1 items-center gap-1 overflow-hidden text-sm sm:flex-initial">
 		{#each breadcrumbs as crumb, index (crumb.href)}
 			{#if index > 0}
-				<Icon icon="mdi:chevron-right" class="h-4 w-4 text-muted-foreground" />
+				<Icon icon="mdi:chevron-right" class="h-4 w-4 shrink-0 text-muted-foreground" />
 			{/if}
 			{#if index === breadcrumbs.length - 1}
-				<span class="font-medium">{crumb.label}</span>
+				<span class="truncate font-medium">{crumb.label}</span>
 			{:else}
-				<a href={crumb.href} class="text-muted-foreground transition-colors hover:text-foreground">
+				<a href={crumb.href} class="shrink-0 text-muted-foreground transition-colors hover:text-foreground">
 					{crumb.label}
 				</a>
 			{/if}
 		{/each}
 	</nav>
 
-	<div class="flex-1"></div>
+	<div class="hidden flex-1 sm:block"></div>
 
 	<!-- Search Button -->
 	<Button
 		variant="outline"
-		class="relative h-9 w-full max-w-sm justify-start text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64"
+		size="icon"
+		class="h-8 w-8 shrink-0 sm:hidden"
+		onclick={() => handleOpenChange(true)}
+	>
+		<Icon icon="mdi:magnify" class="h-4 w-4" />
+		<span class="sr-only">Search</span>
+	</Button>
+	<Button
+		variant="outline"
+		class="relative hidden h-9 justify-start text-sm text-muted-foreground sm:flex sm:w-40 sm:pr-12 lg:w-64"
 		onclick={() => handleOpenChange(true)}
 	>
 		<Icon icon="mdi:magnify" class="mr-2 h-4 w-4" />
@@ -141,8 +150,8 @@
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger>
 			{#snippet child({ props })}
-				<Button variant="ghost" size="icon" {...props}>
-					<Icon icon={currentThemeIcon} class="h-5 w-5" />
+				<Button variant="ghost" size="icon" class="h-8 w-8 shrink-0 sm:h-9 sm:w-9" {...props}>
+					<Icon icon={currentThemeIcon} class="h-4 w-4 sm:h-5 sm:w-5" />
 					<span class="sr-only">Toggle theme</span>
 				</Button>
 			{/snippet}

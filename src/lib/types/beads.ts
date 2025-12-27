@@ -135,6 +135,8 @@ export interface CreateIssueDto {
 	description?: string;
 	labels?: string[];
 	parentId?: string;
+	blockedBy?: string[];
+	blocks?: string[];
 }
 
 export interface UpdateIssueDto {
@@ -146,6 +148,8 @@ export interface UpdateIssueDto {
 	acceptanceCriteria?: string;
 	labels?: string[];
 	closeReason?: string;
+	blockedBy?: string[];
+	blocks?: string[];
 }
 
 export interface AddRepoDto {

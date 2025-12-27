@@ -78,7 +78,8 @@ function mapJsonlToIssue(jsonl: JsonlIssue, repoPath: string): Issue {
 		blockedBy,
 		blocks,
 		parentId: parentDep?.depends_on_id,
-		filePath: path.join(repoPath, '.beads', 'issues.jsonl')
+		// Point to markdown file for updates - JSONL is read-only from beads CLI
+		filePath: path.join(repoPath, '.beads', 'issues', `${jsonl.id}.md`)
 	};
 }
 
@@ -257,8 +258,8 @@ export async function createIssue(repoId: string, dto: CreateIssueDto): Promise<
 		created: new Date().toISOString().split('T')[0],
 		description: dto.description || '',
 		labels: dto.labels || [],
-		blockedBy: [],
-		blocks: [],
+		blockedBy: dto.blockedBy || [],
+		blocks: dto.blocks || [],
 		parentId: dto.parentId,
 		filePath: path.join(repo.path, '.beads', 'issues', `${issueId}.md`)
 	};

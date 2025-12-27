@@ -38,7 +38,10 @@
 
 	<!-- Stats Cards -->
 	<div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-		<Card.Root>
+		<Card.Root
+			class="cursor-pointer transition-colors hover:border-primary/50"
+			onclick={() => goto('/repos')}
+		>
 			<Card.Header class="pb-2">
 				<Card.Title class="text-sm font-medium text-muted-foreground">Repositories</Card.Title>
 			</Card.Header>

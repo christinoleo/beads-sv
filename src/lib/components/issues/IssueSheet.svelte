@@ -19,10 +19,10 @@
 		repoId: string;
 		onOpenChange?: (open: boolean) => void;
 		onIssueUpdate?: (issue: Issue) => void;
-		onEdit?: (issue: Issue) => void;
+		onIssueNavigate?: (issueId: string) => void;
 	}
 
-	let { issue, open = $bindable(false), repoId, onOpenChange, onIssueUpdate }: Props = $props();
+	let { issue, open = $bindable(false), repoId, onOpenChange, onIssueUpdate, onIssueNavigate }: Props = $props();
 
 	let isUpdating = $state(false);
 	let updateError = $state<string | null>(null);
@@ -407,12 +407,19 @@
 								</span>
 								<div class="flex flex-wrap gap-1.5">
 									{#each displayIssue.blockedBy as blockerId (blockerId)}
-										<Badge
-											variant="outline"
-											class="border-red-200 text-xs text-red-700 dark:border-red-800 dark:text-red-300"
+										<button
+											type="button"
+											onclick={() => onIssueNavigate?.(blockerId)}
+											class="inline-flex"
 										>
-											{blockerId}
-										</Badge>
+											<Badge
+												variant="outline"
+												class="cursor-pointer border-red-200 text-xs text-red-700 transition-colors hover:bg-red-100 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900"
+											>
+												<Icon icon="mdi:open-in-new" class="mr-1 h-3 w-3" />
+												{blockerId}
+											</Badge>
+										</button>
 									{/each}
 								</div>
 							</div>
@@ -428,12 +435,19 @@
 								</span>
 								<div class="flex flex-wrap gap-1.5">
 									{#each displayIssue.blocks as blockedId (blockedId)}
-										<Badge
-											variant="outline"
-											class="border-orange-200 text-xs text-orange-700 dark:border-orange-800 dark:text-orange-300"
+										<button
+											type="button"
+											onclick={() => onIssueNavigate?.(blockedId)}
+											class="inline-flex"
 										>
-											{blockedId}
-										</Badge>
+											<Badge
+												variant="outline"
+												class="cursor-pointer border-orange-200 text-xs text-orange-700 transition-colors hover:bg-orange-100 dark:border-orange-800 dark:text-orange-300 dark:hover:bg-orange-900"
+											>
+												<Icon icon="mdi:open-in-new" class="mr-1 h-3 w-3" />
+												{blockedId}
+											</Badge>
+										</button>
 									{/each}
 								</div>
 							</div>

@@ -57,14 +57,25 @@
 			</div>
 
 			<div class="flex shrink-0 items-center gap-2">
-				<Button variant="outline" size="icon" class="h-8 w-8 sm:hidden">
+				<Button
+					variant="outline"
+					size="icon"
+					class="h-8 w-8 sm:hidden"
+					onclick={() => goto(`/repos/${repo.id}/issues?new=true`)}
+					aria-label="Create new issue"
+				>
 					<Icon icon="mdi:plus" class="h-4 w-4" />
 				</Button>
-				<Button variant="outline" size="sm" class="hidden gap-2 sm:inline-flex">
+				<Button
+					variant="outline"
+					size="sm"
+					class="hidden gap-2 sm:inline-flex"
+					onclick={() => goto(`/repos/${repo.id}/issues?new=true`)}
+				>
 					<Icon icon="mdi:plus" class="h-4 w-4" />
 					New Issue
 				</Button>
-				<Button variant="ghost" size="icon" class="h-8 w-8">
+				<Button variant="ghost" size="icon" class="h-8 w-8" aria-label="Settings">
 					<Icon icon="mdi:cog-outline" class="h-4 w-4" />
 				</Button>
 			</div>

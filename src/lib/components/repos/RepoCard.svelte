@@ -7,11 +7,11 @@
 
 	interface Props {
 		repo: ManagedRepo;
+		href?: string;
 		onRemove?: (repo: ManagedRepo) => void;
-		onOpen?: (repo: ManagedRepo) => void;
 	}
 
-	let { repo, onRemove, onOpen }: Props = $props();
+	let { repo, href, onRemove }: Props = $props();
 
 	function truncatePath(path: string, maxLength: number = 40): string {
 		if (path.length <= maxLength) return path;
@@ -43,7 +43,11 @@
 	}
 </script>
 
-<Card.Root class="relative transition-shadow hover:shadow-md">
+<a
+	{href}
+	class="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+>
+	<Card.Root class="relative h-full transition-shadow hover:shadow-md hover:border-primary/50">
 	<Card.Header class="pb-2">
 		<div class="flex items-start justify-between gap-2">
 			<div class="flex min-w-0 items-center gap-2">
@@ -96,19 +100,19 @@
 			<Icon icon="mdi:sync" class="h-3 w-3" />
 			{formatDate(repo.lastSyncedAt)}
 		</span>
-		<div class="flex gap-1">
-			<Button variant="ghost" size="icon-sm" onclick={() => onOpen?.(repo)} title="Open repository">
-				<Icon icon="mdi:open-in-new" class="h-4 w-4" />
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon-sm"
-				onclick={() => onRemove?.(repo)}
-				title="Remove repository"
-				class="text-destructive hover:text-destructive"
-			>
-				<Icon icon="mdi:trash-can-outline" class="h-4 w-4" />
-			</Button>
-		</div>
+		<Button
+			variant="ghost"
+			size="icon-sm"
+			onclick={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				onRemove?.(repo);
+			}}
+			aria-label="Remove {repo.name} from workspace"
+			class="text-destructive hover:text-destructive"
+		>
+			<Icon icon="mdi:trash-can-outline" class="h-4 w-4" />
+		</Button>
 	</Card.Footer>
-</Card.Root>
+	</Card.Root>
+</a>

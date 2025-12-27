@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Collapsible from '$lib/components/ui/collapsible';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -23,13 +24,19 @@
 		issue?: Issue | null;
 		open?: boolean;
 		repoId: string;
+		allIssues?: Issue[];
 		onOpenChange?: (open: boolean) => void;
 		onSuccess?: (issue: Issue) => void;
 	}
 
-	let { issue = null, open = $bindable(false), repoId, onOpenChange, onSuccess }: Props = $props();
+	let { issue = null, open = $bindable(false), repoId, allIssues = [], onOpenChange, onSuccess }: Props = $props();
 
 	const isEditing = $derived(!!issue);
+
+	// Filter out current issue from available issues for dependencies
+	const availableIssues = $derived(
+		allIssues.filter((i) => i.id !== issue?.id)
+	);
 
 	// Form state
 	let title = $state('');
@@ -40,6 +47,31 @@
 	let labelsInput = $state('');
 	let labels = $state<string[]>([]);
 	let closeReason = $state('');
+	let blockedBy = $state<string[]>([]);
+	let blocks = $state<string[]>([]);
+	let blockedBySearch = $state('');
+	let blocksSearch = $state('');
+	let blockedByOpen = $state(false);
+	let blocksOpen = $state(false);
+
+	// Filtered issues for search
+	const filteredBlockedByIssues = $derived(
+		availableIssues.filter(
+			(i) =>
+				!blockedBy.includes(i.id) &&
+				(i.id.toLowerCase().includes(blockedBySearch.toLowerCase()) ||
+					i.title.toLowerCase().includes(blockedBySearch.toLowerCase()))
+		)
+	);
+
+	const filteredBlocksIssues = $derived(
+		availableIssues.filter(
+			(i) =>
+				!blocks.includes(i.id) &&
+				(i.id.toLowerCase().includes(blocksSearch.toLowerCase()) ||
+					i.title.toLowerCase().includes(blocksSearch.toLowerCase()))
+		)
+	);
 
 	let isSubmitting = $state(false);
 	let submitError = $state<string | null>(null);
@@ -83,6 +115,8 @@
 				labels = [...issue.labels];
 				labelsInput = '';
 				closeReason = issue.closeReason || '';
+				blockedBy = [...(issue.blockedBy || [])];
+				blocks = [...(issue.blocks || [])];
 			} else {
 				resetForm();
 			}
@@ -98,8 +132,40 @@
 		labels = [];
 		labelsInput = '';
 		closeReason = '';
+		blockedBy = [];
+		blocks = [];
+		blockedBySearch = '';
+		blocksSearch = '';
 		submitError = null;
 		validationErrors = {};
+	}
+
+	function addBlockedBy(issueId: string) {
+		if (!blockedBy.includes(issueId)) {
+			blockedBy = [...blockedBy, issueId];
+		}
+		blockedBySearch = '';
+		blockedByOpen = false;
+	}
+
+	function removeBlockedBy(issueId: string) {
+		blockedBy = blockedBy.filter((id) => id !== issueId);
+	}
+
+	function addBlocks(issueId: string) {
+		if (!blocks.includes(issueId)) {
+			blocks = [...blocks, issueId];
+		}
+		blocksSearch = '';
+		blocksOpen = false;
+	}
+
+	function removeBlocks(issueId: string) {
+		blocks = blocks.filter((id) => id !== issueId);
+	}
+
+	function getIssueById(id: string): Issue | undefined {
+		return allIssues.find((i) => i.id === id);
 	}
 
 	function handleOpenChange(newOpen: boolean) {
@@ -158,7 +224,9 @@
 					priority,
 					description: description.trim(),
 					labels,
-					closeReason: status === 'closed' ? closeReason.trim() || undefined : undefined
+					closeReason: status === 'closed' ? closeReason.trim() || undefined : undefined,
+					blockedBy,
+					blocks
 				};
 
 				const response = await fetch(`/api/repos/${repoId}/issues/${issue.id}`, {
@@ -182,7 +250,9 @@
 					type,
 					priority,
 					description: description.trim(),
-					labels
+					labels,
+					blockedBy,
+					blocks
 				};
 
 				const response = await fetch(`/api/repos/${repoId}/issues`, {
@@ -419,6 +489,143 @@
 					</div>
 				{/if}
 			</div>
+
+			<!-- Dependencies -->
+			{#if availableIssues.length > 0}
+				<Separator />
+
+				<div class="space-y-4">
+					<h3 class="text-sm font-medium">Dependencies</h3>
+
+					<!-- Blocked By -->
+					<div class="space-y-2">
+						<label class="text-sm text-muted-foreground">Blocked by (must be done first)</label>
+						<Collapsible.Root bind:open={blockedByOpen}>
+							<Collapsible.Trigger
+								class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+								disabled={isSubmitting}
+							>
+								<span class="flex items-center">
+									<Icon icon="mdi:plus" class="mr-2 h-4 w-4" />
+									Add blocker...
+								</span>
+								<Icon icon={blockedByOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'} class="h-4 w-4" />
+							</Collapsible.Trigger>
+							<Collapsible.Content class="mt-2 space-y-2">
+								<Input
+									placeholder="Search issues..."
+									bind:value={blockedBySearch}
+									disabled={isSubmitting}
+								/>
+								<div class="max-h-32 overflow-y-auto rounded-md border">
+									{#if filteredBlockedByIssues.length === 0}
+										<p class="p-2 text-center text-sm text-muted-foreground">No issues found</p>
+									{:else}
+										{#each filteredBlockedByIssues.slice(0, 8) as i (i.id)}
+											<button
+												type="button"
+												class="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm hover:bg-accent"
+												onclick={() => addBlockedBy(i.id)}
+											>
+												<TypeIcon type={i.type} size={14} />
+												<span class="font-mono text-xs text-muted-foreground">{i.id}</span>
+												<span class="truncate">{i.title}</span>
+											</button>
+										{/each}
+									{/if}
+								</div>
+							</Collapsible.Content>
+						</Collapsible.Root>
+						{#if blockedBy.length > 0}
+							<div class="flex flex-wrap gap-2">
+								{#each blockedBy as id (id)}
+									{@const linkedIssue = getIssueById(id)}
+									<Badge variant="outline" class="gap-1 border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950">
+										<Icon icon="mdi:block-helper" class="h-3 w-3 text-red-500" />
+										<span class="font-mono text-xs">{id}</span>
+										{#if linkedIssue}
+											<span class="max-w-24 truncate text-xs">{linkedIssue.title}</span>
+										{/if}
+										<button
+											type="button"
+											onclick={() => removeBlockedBy(id)}
+											disabled={isSubmitting}
+											class="ml-1 rounded-full hover:text-destructive"
+											aria-label="Remove {id} from blockers"
+										>
+											<Icon icon="mdi:close" class="h-3 w-3" />
+										</button>
+									</Badge>
+								{/each}
+							</div>
+						{/if}
+					</div>
+
+					<!-- Blocks -->
+					<div class="space-y-2">
+						<label class="text-sm text-muted-foreground">Blocks (depends on this)</label>
+						<Collapsible.Root bind:open={blocksOpen}>
+							<Collapsible.Trigger
+								class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+								disabled={isSubmitting}
+							>
+								<span class="flex items-center">
+									<Icon icon="mdi:plus" class="mr-2 h-4 w-4" />
+									Add dependent...
+								</span>
+								<Icon icon={blocksOpen ? 'mdi:chevron-up' : 'mdi:chevron-down'} class="h-4 w-4" />
+							</Collapsible.Trigger>
+							<Collapsible.Content class="mt-2 space-y-2">
+								<Input
+									placeholder="Search issues..."
+									bind:value={blocksSearch}
+									disabled={isSubmitting}
+								/>
+								<div class="max-h-32 overflow-y-auto rounded-md border">
+									{#if filteredBlocksIssues.length === 0}
+										<p class="p-2 text-center text-sm text-muted-foreground">No issues found</p>
+									{:else}
+										{#each filteredBlocksIssues.slice(0, 8) as i (i.id)}
+											<button
+												type="button"
+												class="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm hover:bg-accent"
+												onclick={() => addBlocks(i.id)}
+											>
+												<TypeIcon type={i.type} size={14} />
+												<span class="font-mono text-xs text-muted-foreground">{i.id}</span>
+												<span class="truncate">{i.title}</span>
+											</button>
+										{/each}
+									{/if}
+								</div>
+							</Collapsible.Content>
+						</Collapsible.Root>
+						{#if blocks.length > 0}
+							<div class="flex flex-wrap gap-2">
+								{#each blocks as id (id)}
+									{@const linkedIssue = getIssueById(id)}
+									<Badge variant="outline" class="gap-1 border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+										<Icon icon="mdi:arrow-right-bold" class="h-3 w-3 text-amber-500" />
+										<span class="font-mono text-xs">{id}</span>
+										{#if linkedIssue}
+											<span class="max-w-24 truncate text-xs">{linkedIssue.title}</span>
+										{/if}
+										<button
+											type="button"
+											onclick={() => removeBlocks(id)}
+											disabled={isSubmitting}
+											class="ml-1 rounded-full hover:text-destructive"
+											aria-label="Remove {id} from dependents"
+										>
+											<Icon icon="mdi:close" class="h-3 w-3" />
+										</button>
+									</Badge>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				</div>
+			{/if}
 
 			<!-- Error -->
 			{#if submitError}

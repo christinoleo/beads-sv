@@ -7,6 +7,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { issuesState } from '$lib/state/issues.svelte';
 	import { groupIssuesByEpic, getEpics } from '$lib/utils/group-by-epic';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import type { Issue, IssueSort } from '$lib/types/beads';
 
@@ -17,6 +19,16 @@
 	let sheetOpen = $state(false);
 	let formOpen = $state(false);
 	let editingIssue = $state<Issue | null>(null);
+
+	// Watch for ?new=true URL param to open the form
+	$effect(() => {
+		if ($page.url.searchParams.get('new') === 'true') {
+			editingIssue = null;
+			formOpen = true;
+			// Clear the param from URL
+			goto($page.url.pathname, { replaceState: true });
+		}
+	});
 
 	// Initialize state with server data
 	$effect(() => {
@@ -65,13 +77,6 @@
 		issuesState.refresh();
 	}
 
-	function handleEditFromSheet(issue: Issue) {
-		// Close sheet and open form for editing
-		sheetOpen = false;
-		editingIssue = issue;
-		formOpen = true;
-	}
-
 	function handleNewIssue() {
 		editingIssue = null;
 		formOpen = true;
@@ -90,6 +95,15 @@
 		// If we were editing the currently selected issue, update it
 		if (selectedIssue && selectedIssue.id === issue.id) {
 			selectedIssue = issue;
+		}
+	}
+
+	function handleIssueNavigate(issueId: string) {
+		// Find the issue in our list and open it
+		const targetIssue = issuesState.issues.find((i) => i.id === issueId);
+		if (targetIssue) {
+			selectedIssue = targetIssue;
+			sheetOpen = true;
 		}
 	}
 </script>
@@ -186,7 +200,7 @@
 	repoId={data.repoId}
 	onOpenChange={handleSheetOpenChange}
 	onIssueUpdate={handleIssueUpdate}
-	onEdit={handleEditFromSheet}
+	onIssueNavigate={handleIssueNavigate}
 />
 
 <!-- Issue Create/Edit Form -->
@@ -194,6 +208,7 @@
 	issue={editingIssue}
 	bind:open={formOpen}
 	repoId={data.repoId}
+	allIssues={issuesState.issues}
 	onOpenChange={handleFormOpenChange}
 	onSuccess={handleFormSuccess}
 />
