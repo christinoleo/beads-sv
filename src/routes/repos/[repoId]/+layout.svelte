@@ -72,8 +72,8 @@
 	</header>
 
 	<!-- Navigation Tabs -->
-	<div class="border-b">
-		<div class="container overflow-x-auto px-4">
+	<div class="overflow-hidden border-b">
+		<div class="overflow-x-auto px-4">
 			<Tabs.Root value={activeTab} onValueChange={handleTabChange}>
 				<Tabs.List
 					class="h-12 w-auto min-w-max justify-start gap-4 rounded-none border-b-0 bg-transparent p-0"
